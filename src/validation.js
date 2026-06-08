@@ -127,10 +127,15 @@ const validate = (req, res, next) => {
   next();
 };
 
+function isValidListStatus(status) {
+  return !status || status === 'all' || VALID_STATUSES.includes(status);
+}
+
 module.exports = {
   bookingValidationRules,
   statusUpdateRules,
   validate,
   VALID_SERVICES,
-  VALID_STATUSES
+  VALID_STATUSES,
+  isValidListStatus
 };

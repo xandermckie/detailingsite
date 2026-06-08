@@ -103,6 +103,28 @@ describe('Booking validation', () => {
       .send(validBooking({ service: 'pickup_dropoff', time: '10:00 AM' }));
     expect(res.status).toBe(400);
   });
+
+  test('rejects SQL injection in vehicle field', async () => {
+    const res = await request(app)
+      .post('/api/bookings')
+      .send(validBooking({ vehicle: "2020 Honda'; DROP TABLE bookings;--" }));
+    expect(res.status).toBe(400);
+  });
+
+  test('rejects unexpected body fields', async () => {
+    const res = await request(app)
+      .post('/api/bookings')
+      .send({ ...validBooking(), isAdmin: true, role: 'admin' });
+    expect(res.status).toBe(400);
+    expect(res.body.message).toMatch(/Invalid request fields/i);
+  });
+
+  test('rejects control characters in name', async () => {
+    const res = await request(app)
+      .post('/api/bookings')
+      .send(validBooking({ firstName: 'John\x00<script>' }));
+    expect(res.status).toBe(400);
+  });
 });
 
 describe('Booking creation', () => {
@@ -174,12 +196,21 @@ describe('Admin routes', () => {
     expect(res.body.data.status).toBe('confirmed');
   });
 
-  test('exports booking data', async () => {
+  test('exports booking data with decrypted notes', async () => {
     const res = await request(app)
       .get(`/api/admin/bookings/${bookingId}/export`)
       .set('X-API-Key', ADMIN_API_KEY);
     expect(res.status).toBe(200);
     expect(res.body.data.email).toBe('admin-test@example.com');
+    expect(res.body.data).not.toHaveProperty('first_name_encrypted');
+  });
+
+  test('rejects admin list with invalid status filter', async () => {
+    const now = new Date(WEEKEND + 'T12:00:00');
+    const res = await request(app)
+      .get(`/api/admin/bookings?year=${now.getFullYear()}&month=${now.getMonth() + 1}&status=hacked`)
+      .set('X-API-Key', ADMIN_API_KEY);
+    expect(res.status).toBe(400);
   });
 
   test('cancellation frees availability slot', async () => {

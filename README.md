@@ -152,24 +152,6 @@ Create a new booking request.
 }
 ```
 
-### GET `/api/bookings/:bookingId`
-Get public booking summary.
-
-**Response:**
-```json
-{
-  "success": true,
-  "data": {
-    "id": "uuid",
-    "vehicle": "2020 Honda Civic",
-    "date": "2025-06-14",
-    "time": "10:00 AM",
-    "status": "pending",
-    "created_at": "2025-06-08T10:30:00Z"
-  }
-}
-```
-
 ### GET `/api/availability`
 Get booked time slots for a calendar month. Query params: `year`, `month` (1–12).
 
@@ -254,6 +236,11 @@ SQLite database at `./data/bookings.db` contains:
 - [x] Environment variables for secrets
 - [x] Audit logging
 - [x] HTTPS enforced in production
+- [x] Timing-safe admin API key comparison
+- [x] Whitelist validation + control-character stripping on all booking fields
+- [x] Notes encrypted at rest (AES-256)
+- [x] Rejects unexpected request body fields
+- [x] Admin API responses marked no-store (no caching)
 
 ## For Admins: Accessing Bookings
 

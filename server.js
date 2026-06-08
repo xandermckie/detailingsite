@@ -7,9 +7,12 @@ const { v4: uuidv4 } = require('uuid');
 
 const Database = require('./src/database');
 const Encryption = require('./src/encryption');
-const { bookingValidationRules, statusUpdateRules, validate } = require('./src/validation');
+const { bookingValidationRules, statusUpdateRules, validate, isValidListStatus } = require('./src/validation');
 const { requireAdmin, isValidUUID } = require('./src/admin');
+const { sanitizeBookingFields, rejectExtraFields, BOOKING_FIELD_KEYS } = require('./src/sanitize');
 const emailService = require('./src/email');
+
+const ENCRYPTED_FIELD_PATTERN = /^[0-9a-f]{32}:[0-9a-f]+$/i;
 
 const app = express();
 app.set('trust proxy', 1);
@@ -20,26 +23,38 @@ const RAILWAY_API_ORIGIN = process.env.RAILWAY_API_ORIGIN || 'https://detailings
 const db = new Database(process.env.DATABASE_PATH || './data/bookings.db');
 const encryption = new Encryption(process.env.ENCRYPTION_KEY);
 
+function decryptField(encrypted) {
+  return encryption.decrypt(encrypted);
+}
+
+function decryptNotes(notes) {
+  if (!notes) return '';
+  if (ENCRYPTED_FIELD_PATTERN.test(notes)) {
+    return encryption.decrypt(notes);
+  }
+  return notes;
+}
+
 function decryptBooking(booking) {
   const decrypted = {
     id: booking.id,
-    first_name: encryption.decrypt(booking.first_name_encrypted),
-    last_name: encryption.decrypt(booking.last_name_encrypted),
-    email: encryption.decrypt(booking.email_encrypted),
-    phone: encryption.decrypt(booking.phone_encrypted),
+    first_name: decryptField(booking.first_name_encrypted),
+    last_name: decryptField(booking.last_name_encrypted),
+    email: decryptField(booking.email_encrypted),
+    phone: decryptField(booking.phone_encrypted),
     vehicle: booking.vehicle,
-    address: encryption.decrypt(booking.address_encrypted),
+    address: decryptField(booking.address_encrypted),
     service: booking.service,
     date: booking.date,
     time: booking.time,
-    notes: booking.notes || '',
+    notes: decryptNotes(booking.notes),
     status: booking.status,
     consent_at: booking.consent_at,
     created_at: booking.created_at,
     updated_at: booking.updated_at
   };
   if (booking.dropoff_address_encrypted) {
-    decrypted.dropoff_address = encryption.decrypt(booking.dropoff_address_encrypted);
+    decrypted.dropoff_address = decryptField(booking.dropoff_address_encrypted);
   }
   return decrypted;
 }
@@ -84,6 +99,12 @@ const corsOptions = {
 app.use(cors(corsOptions));
 app.use(express.json({ limit: '1mb' }));
 app.use(express.urlencoded({ limit: '1mb', extended: true }));
+
+app.use('/api/admin', (req, res, next) => {
+  res.setHeader('Cache-Control', 'no-store, no-cache, must-revalidate, private');
+  res.setHeader('Pragma', 'no-cache');
+  next();
+});
 
 app.use((req, res, next) => {
   for (const key in req.body) {
@@ -159,7 +180,7 @@ app.get('/api/availability', async (req, res) => {
 
     res.json({ success: true, booked });
   } catch (error) {
-    console.error('Availability error:', error);
+    console.error('Availability error:', error.message);
     res.status(500).json({
       success: false,
       message: 'Failed to fetch availability'
@@ -167,7 +188,15 @@ app.get('/api/availability', async (req, res) => {
   }
 });
 
-app.post('/api/bookings', bookingValidationRules(), validate, async (req, res) => {
+app.post('/api/bookings',
+  rejectExtraFields(BOOKING_FIELD_KEYS),
+  bookingValidationRules(),
+  validate,
+  (req, res, next) => {
+    sanitizeBookingFields(req.body);
+    next();
+  },
+  async (req, res) => {
   try {
     const {
       firstName, lastName, email, phone, vehicle, address,
@@ -190,6 +219,7 @@ app.post('/api/bookings', bookingValidationRules(), validate, async (req, res) =
     const dropoffEncrypted = (service === 'pickup_dropoff' && dropoffAddress)
       ? encryption.encrypt(dropoffAddress)
       : null;
+    const notesEncrypted = notes ? encryption.encrypt(notes) : '';
 
     await db.run(`
       INSERT INTO bookings (
@@ -209,7 +239,7 @@ app.post('/api/bookings', bookingValidationRules(), validate, async (req, res) =
       service,
       date,
       time,
-      notes || '',
+      notesEncrypted,
       'pending'
     ]);
 
@@ -238,44 +268,10 @@ app.post('/api/bookings', bookingValidationRules(), validate, async (req, res) =
     });
 
   } catch (error) {
-    console.error('Booking error:', error);
+    console.error('Booking error:', error.message);
     res.status(500).json({
       success: false,
       message: 'Failed to process booking. Please try again.'
-    });
-  }
-});
-
-app.get('/api/bookings/:bookingId', async (req, res) => {
-  try {
-    const { bookingId } = req.params;
-
-    if (!isValidUUID(bookingId)) {
-      return res.status(400).json({
-        success: false,
-        message: 'Invalid booking ID'
-      });
-    }
-
-    const booking = await db.get(
-      `SELECT id, vehicle, date, time, status, service, created_at FROM bookings WHERE id = ?`,
-      [bookingId]
-    );
-
-    if (!booking) {
-      return res.status(404).json({
-        success: false,
-        message: 'Booking not found'
-      });
-    }
-
-    res.json({ success: true, data: booking });
-
-  } catch (error) {
-    console.error('Fetch booking error:', error);
-    res.status(500).json({
-      success: false,
-      message: 'Failed to fetch booking'
     });
   }
 });
@@ -308,7 +304,7 @@ async function handleBookingDetails(req, res) {
     res.json({ success: true, data: decryptBooking(booking) });
 
   } catch (error) {
-    console.error('Fetch booking details error:', error);
+    console.error('Fetch booking details error:', error.message);
     res.status(500).json({
       success: false,
       message: 'Failed to fetch booking details'
@@ -325,10 +321,17 @@ app.get('/api/admin/bookings', requireAdmin, async (req, res) => {
     const month = parseInt(req.query.month, 10);
     const status = req.query.status;
 
-    if (!year || !month || month < 1 || month > 12) {
+    if (!year || !month || month < 1 || month > 12 || year < 2000 || year > 2100) {
       return res.status(400).json({
         success: false,
         message: 'Valid year and month (1-12) are required'
+      });
+    }
+
+    if (!isValidListStatus(status)) {
+      return res.status(400).json({
+        success: false,
+        message: 'Invalid status filter'
       });
     }
 
@@ -348,7 +351,7 @@ app.get('/api/admin/bookings', requireAdmin, async (req, res) => {
     res.json({ success: true, data: bookings });
 
   } catch (error) {
-    console.error('List bookings error:', error);
+    console.error('List bookings error:', error.message);
     res.status(500).json({
       success: false,
       message: 'Failed to list bookings'
@@ -356,7 +359,12 @@ app.get('/api/admin/bookings', requireAdmin, async (req, res) => {
   }
 });
 
-app.patch('/api/admin/bookings/:bookingId', requireAdmin, statusUpdateRules(), validate, async (req, res) => {
+app.patch('/api/admin/bookings/:bookingId',
+  requireAdmin,
+  rejectExtraFields(new Set(['status'])),
+  statusUpdateRules(),
+  validate,
+  async (req, res) => {
   try {
     const { bookingId } = req.params;
     const { status } = req.body;
@@ -404,7 +412,7 @@ app.patch('/api/admin/bookings/:bookingId', requireAdmin, statusUpdateRules(), v
     });
 
   } catch (error) {
-    console.error('Update booking error:', error);
+    console.error('Update booking error:', error.message);
     res.status(500).json({
       success: false,
       message: 'Failed to update booking'
@@ -440,7 +448,7 @@ app.delete('/api/admin/bookings/:bookingId', requireAdmin, async (req, res) => {
     res.json({ success: true, message: 'Booking deleted' });
 
   } catch (error) {
-    console.error('Delete booking error:', error);
+    console.error('Delete booking error:', error.message);
     res.status(500).json({
       success: false,
       message: 'Failed to delete booking'
@@ -476,7 +484,7 @@ app.get('/api/admin/bookings/:bookingId/export', requireAdmin, async (req, res) 
     res.json({ success: true, data: decryptBooking(booking) });
 
   } catch (error) {
-    console.error('Export booking error:', error);
+    console.error('Export booking error:', error.message);
     res.status(500).json({
       success: false,
       message: 'Failed to export booking'
@@ -492,7 +500,7 @@ app.use((req, res) => {
 });
 
 app.use((err, req, res, next) => {
-  console.error('Unhandled error:', err);
+  console.error('Unhandled error:', err.message);
   res.status(500).json({
     success: false,
     message: NODE_ENV === 'production'
@@ -509,6 +517,13 @@ const startServer = async () => {
   try {
     if (!process.env.ENCRYPTION_KEY) {
       throw new Error('ENCRYPTION_KEY environment variable is required. Generate one with: node -e "console.log(require(\'crypto\').randomBytes(32).toString(\'hex\'))"');
+    }
+
+    if (!process.env.ADMIN_API_KEY || process.env.ADMIN_API_KEY.length < 16) {
+      if (NODE_ENV === 'production') {
+        throw new Error('ADMIN_API_KEY environment variable is required in production (min 16 characters)');
+      }
+      console.warn('⚠ ADMIN_API_KEY not set — admin routes will reject all requests');
     }
 
     await db.init();

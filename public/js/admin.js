@@ -96,6 +96,7 @@ async function login() {
       return;
     }
     if (!res.ok) throw new Error('Failed to connect');
+    document.getElementById('apiKey').value = '';
     showDashboard();
   } catch (err) {
     clearApiKey();
