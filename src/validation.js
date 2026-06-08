@@ -38,7 +38,7 @@ const bookingValidationRules = () => {
       .trim()
       .notEmpty().withMessage('Address is required')
       .isLength({ min: 5, max: 500 }).withMessage('Address must be 5-500 characters')
-      .matches(/^[a-zA-Z0-9\s,.-#]+$/).withMessage('Address contains invalid characters'),
+      .matches(/^[a-zA-Z0-9\s,.#-]+$/).withMessage('Address contains invalid characters'),
 
     body('service')
       .notEmpty().withMessage('Service is required')
