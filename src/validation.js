@@ -82,7 +82,7 @@ const bookingValidationRules = () => {
 
     body('date')
       .notEmpty().withMessage('Date is required')
-      .isISO8601().withMessage('Invalid date format')
+      .matches(/^\d{4}-\d{2}-\d{2}$/).withMessage('Invalid date format')
       .custom((value) => {
         const todayIso = getChicagoTodayIso();
         if (value < todayIso) {

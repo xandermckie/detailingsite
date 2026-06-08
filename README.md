@@ -8,7 +8,7 @@ Production-ready mobile detailing booking platform with enterprise-grade securit
 - AES-256 encryption for all sensitive user data (names, emails, phones, addresses)
 - Input validation and sanitization to prevent SQL injection
 - Rate limiting to prevent brute force attacks
-- CSRF protection headers
+- CORS allowlist (JSON API; no cookie-based sessions)
 - Secure HTTP headers via Helmet
 - No sensitive data exposed in logs
 

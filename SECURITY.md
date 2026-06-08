@@ -263,7 +263,7 @@ Encrypted fields are never logged in plaintext.
 |--------|-----------|
 | **SQL Injection** | Parameterized queries, input validation |
 | **XSS (Cross-Site Scripting)** | CSP headers, input sanitization |
-| **CSRF (Cross-Site Request Forgery)** | SameSite cookies, origin checking |
+| **CSRF (Cross-Site Request Forgery)** | CORS allowlist on JSON API; admin uses header auth (not cookies) |
 | **Brute Force** | Rate limiting (30 req/min per IP) |
 | **DDoS** | Rate limiting, request size limits |
 | **Man-in-the-Middle** | HTTPS/TLS encryption, HSTS |

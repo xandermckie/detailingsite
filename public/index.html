@@ -293,6 +293,7 @@
     .consent-row a { color: var(--red); }
     .dropoff-group { display: none; }
     .dropoff-group.visible { display: block; }
+    .hp-field { position: absolute; left: -9999px; width: 1px; height: 1px; overflow: hidden; opacity: 0; pointer-events: none; }
     .cal-loading { display: none; text-align: center; padding: 1.5rem; color: var(--white-muted); font-size: 0.82rem; }
     .cal-days.cal-hidden { opacity: 0.4; pointer-events: none; }
     .contact-block { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius-lg); padding: 1.5rem 2rem; margin-top: 2rem; }
@@ -777,6 +778,10 @@
             <div class="time-slot" data-time="6:00 PM">6:00 PM</div>
           </div>
           <div class="form-group"><label for="notes">Notes (Optional)</label><textarea id="notes" placeholder="Specific stains, unusual vehicle size, access notes..."></textarea></div>
+          <div class="hp-field" aria-hidden="true">
+            <label for="website">Website</label>
+            <input type="text" id="website" name="website" tabindex="-1" autocomplete="off" />
+          </div>
           <div class="consent-row">
             <input type="checkbox" id="privacyConsent" />
             <label for="privacyConsent">I agree to the <a href="#" data-page="privacy">Privacy Policy</a> and consent to 2 The Xtreme Detailing storing my information for appointment scheduling.</label>

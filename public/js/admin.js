@@ -18,6 +18,8 @@ let currentMonth = new Date().getMonth();
 let selectedBookingId = null;
 let bookings = [];
 
+// API key is stored in sessionStorage for the session only.
+// Any XSS on this page could exfiltrate it — keep CSP strict and rotate keys if compromised.
 function getApiKey() {
   try {
     return sessionStorage.getItem('adminApiKey') || '';
@@ -65,8 +67,12 @@ function updateMonthLabel() {
   document.getElementById('monthLabel').textContent = MONTHS[currentMonth] + ' ' + currentYear;
 }
 
+const VALID_STATUSES = ['pending', 'confirmed', 'cancelled', 'completed'];
+
 function statusBadge(status) {
-  return `<span class="badge badge-${status}">${status}</span>`;
+  const safeStatus = escapeHtml(status);
+  const badgeClass = VALID_STATUSES.includes(status) ? status : 'pending';
+  return `<span class="badge badge-${badgeClass}">${safeStatus}</span>`;
 }
 
 function formatDate(dateStr) {

@@ -9,14 +9,17 @@ function isConfigured() {
 function getTransporter() {
   if (!isConfigured()) return null;
   if (!transporter) {
+    const port = parseInt(process.env.SMTP_PORT || '587', 10);
     transporter = nodemailer.createTransport({
       host: process.env.SMTP_HOST,
-      port: parseInt(process.env.SMTP_PORT || '587', 10),
-      secure: process.env.SMTP_PORT === '465',
+      port,
+      secure: port === 465,
+      requireTLS: port !== 465,
       auth: {
         user: process.env.SMTP_USER,
         pass: process.env.SMTP_PASS
-      }
+      },
+      tls: { minVersion: 'TLSv1.2' }
     });
   }
   return transporter;

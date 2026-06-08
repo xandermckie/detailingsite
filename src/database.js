@@ -62,6 +62,13 @@ class Database {
             admin_ip TEXT,
             timestamp DATETIME DEFAULT CURRENT_TIMESTAMP
           )
+        `);
+
+        this.db.run(`
+          CREATE TABLE IF NOT EXISTS submission_guard (
+            email_hash TEXT PRIMARY KEY,
+            submitted_at DATETIME DEFAULT CURRENT_TIMESTAMP
+          )
         `, (err) => {
           if (err) reject(err);
           else resolve();

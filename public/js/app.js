@@ -16,9 +16,19 @@ const FACEBOOK_URL = window.FACEBOOK_URL || '';
 const TIKTOK_URL = window.TIKTOK_URL || '';
 const CONTACT_EMAIL = window.CONTACT_EMAIL || 'secondsfoodtruck@gmail.com';
 
+function isSafeUrl(url) {
+  if (!url || typeof url !== 'string') return false;
+  try {
+    const parsed = new URL(url);
+    return parsed.protocol === 'http:' || parsed.protocol === 'https:';
+  } catch (e) {
+    return false;
+  }
+}
+
 function renderSocialBtn(platform, label, iconId, url) {
   const inner = `<svg><use href="#${iconId}"/></svg> ${label}`;
-  if (url) {
+  if (isSafeUrl(url)) {
     return `<a href="${url}" target="_blank" rel="noopener noreferrer" class="social-btn ${platform}">${inner}</a>`;
   }
   return `<span class="social-btn social-btn-disabled ${platform}" aria-disabled="true">${inner}</span>`;
@@ -26,7 +36,7 @@ function renderSocialBtn(platform, label, iconId, url) {
 
 function renderSocialListItem(label, iconId, url) {
   const icon = `<svg style="width:14px;height:14px;fill:currentColor;"><use href="#${iconId}"/></svg> `;
-  if (url) {
+  if (isSafeUrl(url)) {
     return `<li><a href="${url}" target="_blank" rel="noopener noreferrer">${icon}${label}</a></li>`;
   }
   return `<li><span class="social-link-disabled">${icon}${label}</span></li>`;
@@ -34,10 +44,38 @@ function renderSocialListItem(label, iconId, url) {
 
 function renderSocialMini(label, iconId, url) {
   const inner = `<svg><use href="#${iconId}"/></svg> ${label}`;
-  if (url) {
+  if (isSafeUrl(url)) {
     return `<a href="${url}" target="_blank" rel="noopener noreferrer">${inner}</a>`;
   }
   return `<span class="social-link-disabled">${inner}</span>`;
+}
+
+function renderSuccessDetail(displayDate, time, serviceLabel) {
+  const el = document.getElementById('successDetail');
+  if (!el) return;
+  el.textContent = '';
+
+  const intro = document.createElement('span');
+  intro.textContent = "We'll reach out within 24 hours to confirm your detail.";
+  el.appendChild(intro);
+  el.appendChild(document.createElement('br'));
+  el.appendChild(document.createElement('br'));
+
+  const addLine = (label, value, highlight) => {
+    const strong = document.createElement('strong');
+    strong.style.color = 'var(--white)';
+    strong.textContent = label + ': ';
+    el.appendChild(strong);
+    const val = document.createElement('span');
+    if (highlight) val.style.color = '#cc2020';
+    val.textContent = value;
+    el.appendChild(val);
+    el.appendChild(document.createElement('br'));
+  };
+
+  addLine('Date', displayDate, true);
+  addLine('Time', time, true);
+  addLine('Service', serviceLabel, false);
 }
 
 let selectedDate = null;
@@ -411,7 +449,7 @@ function toggleDropoffField() {
 }
 
 function resetBookingForm() {
-  ['fname', 'lname', 'email', 'phone', 'vehicle', 'address', 'dropoffAddress', 'notes'].forEach((id) => {
+  ['fname', 'lname', 'email', 'phone', 'vehicle', 'address', 'dropoffAddress', 'notes', 'website'].forEach((id) => {
     const el = document.getElementById(id);
     if (el) el.value = '';
   });
@@ -456,7 +494,8 @@ async function submitBooking() {
     date: dateStr,
     time: selectedTime,
     notes: document.getElementById('notes').value.trim(),
-    privacyConsent: true
+    privacyConsent: true,
+    website: document.getElementById('website') ? document.getElementById('website').value : ''
   };
 
   if (data.service === 'pickup_dropoff') {
@@ -487,12 +526,7 @@ async function submitBooking() {
 
       const serviceLabel = SERVICE_LABELS[data.service] || data.service;
 
-      document.getElementById('successDetail').innerHTML =
-        "We'll reach out within 24 hours to confirm your detail.<br><br>" +
-        '<strong style="color:var(--white);">Date:</strong> <span style="color:#cc2020;">' + displayDate + '</span><br>' +
-        '<strong style="color:var(--white);">Time:</strong> <span style="color:#cc2020;">' + selectedTime + '</span><br>' +
-        '<strong style="color:var(--white);">Service:</strong> ' + serviceLabel;
-
+      renderSuccessDetail(displayDate, selectedTime, serviceLabel);
       document.getElementById('successMsg').style.display = 'block';
 
       if (!unavailableSlots[dateStr]) unavailableSlots[dateStr] = [];

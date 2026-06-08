@@ -8,11 +8,12 @@ const { v4: uuidv4 } = require('uuid');
 const Database = require('./src/database');
 const Encryption = require('./src/encryption');
 const { bookingValidationRules, statusUpdateRules, validate, isValidListStatus } = require('./src/validation');
-const { requireAdmin, isValidUUID } = require('./src/admin');
+const { requireAdmin, isValidUUID, setAuditDb } = require('./src/admin');
 const { sanitizeBookingFields, rejectExtraFields, BOOKING_FIELD_KEYS } = require('./src/sanitize');
+const { createRateLimiter } = require('./src/rateLimit');
+const { rejectHoneypot } = require('./src/honeypot');
+const { isEmailThrottled, recordEmailSubmission } = require('./src/submissionGuard');
 const emailService = require('./src/email');
-
-const ENCRYPTED_FIELD_PATTERN = /^[0-9a-f]{32}:[0-9a-f]+$/i;
 
 const app = express();
 app.set('trust proxy', 1);
@@ -29,7 +30,7 @@ function decryptField(encrypted) {
 
 function decryptNotes(notes) {
   if (!notes) return '';
-  if (ENCRYPTED_FIELD_PATTERN.test(notes)) {
+  if (encryption.isEncrypted(notes)) {
     return encryption.decrypt(notes);
   }
   return notes;
@@ -129,29 +130,26 @@ app.use((req, res, next) => {
   next();
 });
 
-const requestCounts = new Map();
-app.use((req, res, next) => {
-  const ip = req.ip;
-  const now = Date.now();
-  const windowStart = now - 60000;
-
-  if (!requestCounts.has(ip)) {
-    requestCounts.set(ip, []);
-  }
-
-  const timestamps = requestCounts.get(ip).filter(ts => ts > windowStart);
-
-  if (timestamps.length >= 30) {
-    return res.status(429).json({
-      success: false,
-      message: 'Too many requests. Please try again later.'
-    });
-  }
-
-  timestamps.push(now);
-  requestCounts.set(ip, timestamps);
-  next();
+const globalRateLimit = createRateLimiter({
+  maxRequests: 30,
+  windowMs: 60 * 1000,
+  message: 'Too many requests. Please try again later.'
 });
+
+const bookingRateLimit = createRateLimiter({
+  maxRequests: NODE_ENV === 'test' ? 1000 : 5,
+  windowMs: 60 * 60 * 1000,
+  message: 'Too many booking requests. Please try again in an hour.'
+});
+
+const adminRateLimit = createRateLimiter({
+  maxRequests: 20,
+  windowMs: 60 * 1000,
+  message: 'Too many admin requests. Please try again later.'
+});
+
+app.use(globalRateLimit);
+app.use('/api/admin', adminRateLimit);
 
 // ──────────────────────────────────────────────────────────────
 // ROUTES
@@ -200,6 +198,8 @@ app.get('/api/availability', async (req, res) => {
 });
 
 app.post('/api/bookings',
+  bookingRateLimit,
+  rejectHoneypot,
   rejectExtraFields(BOOKING_FIELD_KEYS),
   bookingValidationRules(),
   validate,
@@ -214,15 +214,10 @@ app.post('/api/bookings',
       service, date, time, notes, dropoffAddress
     } = req.body;
 
-    const existing = await db.get(
-      `SELECT id FROM bookings WHERE date = ? AND time = ? AND status != 'cancelled'`,
-      [date, time]
-    );
-
-    if (existing) {
-      return res.status(409).json({
+    if (await isEmailThrottled(db, email)) {
+      return res.status(429).json({
         success: false,
-        message: 'This time slot is already booked. Please choose another.'
+        message: 'A booking was recently submitted with this email. Please wait before trying again.'
       });
     }
 
@@ -254,6 +249,8 @@ app.post('/api/bookings',
       'pending'
     ]);
 
+    await recordEmailSubmission(db, email);
+
     await db.run(
       `INSERT INTO audit_log (action, booking_id, admin_ip) VALUES (?, ?, ?)`,
       ['BOOKING_CREATED', bookingId, req.ip]
@@ -279,6 +276,12 @@ app.post('/api/bookings',
     });
 
   } catch (error) {
+    if (error.code === 'SQLITE_CONSTRAINT') {
+      return res.status(409).json({
+        success: false,
+        message: 'This time slot is already booked. Please choose another.'
+      });
+    }
     console.error('Booking error:', error.message);
     res.status(500).json({
       success: false,
@@ -538,6 +541,7 @@ const startServer = async () => {
     }
 
     await db.init();
+    setAuditDb(db);
     console.log('✓ Database initialized');
 
     const server = app.listen(PORT, () => {

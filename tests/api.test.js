@@ -54,9 +54,11 @@ let db;
 
 beforeAll(async () => {
   const server = require('../server');
+  const { setAuditDb } = require('../src/admin');
   app = server.app;
   db = server.db;
   await db.init();
+  setAuditDb(db);
 });
 
 afterAll(async () => {
@@ -142,6 +144,21 @@ describe('Booking validation', () => {
       .send(validBooking({ firstName: 'John\x00<script>' }));
     expect(res.status).toBe(400);
   });
+
+  test('rejects datetime strings as date', async () => {
+    const res = await request(app)
+      .post('/api/bookings')
+      .send(validBooking({ date: `${BOOKABLE_DATE}T00:00:00.000Z` }));
+    expect(res.status).toBe(400);
+  });
+
+  test('rejects honeypot field when filled', async () => {
+    const res = await request(app)
+      .post('/api/bookings')
+      .send({ ...validBooking({ email: 'honeypot@example.com' }), website: 'https://spam.test' });
+    expect(res.status).toBe(400);
+    expect(res.body.message).toMatch(/Invalid submission/i);
+  });
 });
 
 describe('Booking creation', () => {
@@ -165,6 +182,67 @@ describe('Booking creation', () => {
       }));
     expect(res.status).toBe(201);
     expect(res.body.success).toBe(true);
+  });
+
+  test('returns 409 when two bookings race for the same slot', async () => {
+    const futureDate = new Date(BOOKABLE_DATE + 'T12:00:00');
+    futureDate.setDate(futureDate.getDate() + 14);
+    let raceDate = null;
+    for (let i = 0; i < 21; i++) {
+      const y = futureDate.getFullYear();
+      const m = String(futureDate.getMonth() + 1).padStart(2, '0');
+      const d = String(futureDate.getDate()).padStart(2, '0');
+      const iso = `${y}-${m}-${d}`;
+      if (isBookableDay(iso)) {
+        raceDate = iso;
+        break;
+      }
+      futureDate.setDate(futureDate.getDate() + 1);
+    }
+    if (!raceDate) throw new Error('No bookable date found for race test');
+
+    const slotPayload = (email) => validBooking({
+      date: raceDate,
+      time: '9:00 AM',
+      email
+    });
+
+    const [first, second] = await Promise.all([
+      request(app).post('/api/bookings').send(slotPayload('race1@example.com')),
+      request(app).post('/api/bookings').send(slotPayload('race2@example.com'))
+    ]);
+
+    const statuses = [first.status, second.status].sort();
+    expect(statuses).toEqual([201, 409]);
+  });
+
+  test('throttles repeat submissions from the same email', async () => {
+    const futureDate = new Date(BOOKABLE_DATE + 'T12:00:00');
+    futureDate.setDate(futureDate.getDate() + 21);
+    let throttleDate = null;
+    for (let i = 0; i < 21; i++) {
+      const y = futureDate.getFullYear();
+      const m = String(futureDate.getMonth() + 1).padStart(2, '0');
+      const d = String(futureDate.getDate()).padStart(2, '0');
+      const iso = `${y}-${m}-${d}`;
+      if (isBookableDay(iso)) {
+        throttleDate = iso;
+        break;
+      }
+      futureDate.setDate(futureDate.getDate() + 1);
+    }
+    if (!throttleDate) throw new Error('No bookable date found for throttle test');
+
+    const email = 'throttle@example.com';
+    const first = await request(app)
+      .post('/api/bookings')
+      .send(validBooking({ date: throttleDate, time: '12:00 PM', email }));
+    expect(first.status).toBe(201);
+
+    const second = await request(app)
+      .post('/api/bookings')
+      .send(validBooking({ date: throttleDate, time: '3:00 PM', email }));
+    expect(second.status).toBe(429);
   });
 });
 
@@ -192,6 +270,19 @@ describe('Admin routes', () => {
       .get(`/api/admin/bookings?year=${now.getFullYear()}&month=${now.getMonth() + 1}`)
       .set('X-API-Key', 'wrong-key');
     expect(res.status).toBe(401);
+  });
+
+  test('logs failed admin authentication attempts', async () => {
+    const now = new Date(BOOKABLE_DATE + 'T12:00:00');
+    await request(app)
+      .get(`/api/admin/bookings?year=${now.getFullYear()}&month=${now.getMonth() + 1}`)
+      .set('X-API-Key', 'definitely-wrong-key');
+
+    const row = await db.get(
+      `SELECT action FROM audit_log WHERE action = 'ADMIN_AUTH_FAILED' ORDER BY id DESC LIMIT 1`
+    );
+    expect(row).toBeDefined();
+    expect(row.action).toBe('ADMIN_AUTH_FAILED');
   });
 
   test('lists bookings with valid API key', async () => {
