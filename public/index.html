@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src https://fonts.gstatic.com; script-src 'self' 'unsafe-inline'; img-src 'self' data: blob:; connect-src 'self';" />
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src https://fonts.gstatic.com; script-src 'self' 'unsafe-inline'; img-src 'self' data: blob:; connect-src 'self' https://detailingsite-production.up.railway.app;" />
   <meta name="referrer" content="no-referrer" />
   <meta name="description" content="2 The Xtreme Detailing — Premium hand detailing by Aaron & Xander. Full interior and exterior. Part of 2nd Chances INC." />
   <title>2 The Xtreme Detailing</title>
@@ -719,8 +719,11 @@
 
 <script>
 // ── API BASE URL ──
-const API_BASE = 'https://your-railway-app.up.railway.app/api';
-// Or your custom domain: 'https://detailing-api.yoursite.com/api';
+// Update RAILWAY_API_ORIGIN after deploying to Railway (see RAILWAY_SETUP.md)
+const RAILWAY_API_ORIGIN = 'https://detailingsite-production.up.railway.app';
+const API_BASE = (location.hostname === 'localhost' || location.hostname === '127.0.0.1')
+  ? window.location.origin + '/api'
+  : RAILWAY_API_ORIGIN + '/api';
 
 /* ── FOOTER HTML ── */
 function makeFooter() {
@@ -917,8 +920,10 @@ async function submitBooking() {
     return;
   }
 
-  // Format date as ISO string
-  const dateStr = selectedDate.toISOString().split('T')[0];
+  const y = selectedDate.getFullYear();
+  const m = String(selectedDate.getMonth() + 1).padStart(2, '0');
+  const d = String(selectedDate.getDate()).padStart(2, '0');
+  const dateStr = `${y}-${m}-${d}`;
 
   // Show loading state
   const submitBtn = document.getElementById('submitBtn');

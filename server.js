@@ -10,6 +10,7 @@ const Encryption = require('./src/encryption');
 const { bookingValidationRules, validate } = require('./src/validation');
 
 const app = express();
+app.set('trust proxy', 1);
 const PORT = process.env.PORT || 3000;
 const NODE_ENV = process.env.NODE_ENV || 'development';
 
