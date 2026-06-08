@@ -1,0 +1,83 @@
+:root {
+  /* Semantic aliases */
+  --bg: #0a0a0a;
+  --text: #f5f2ec;
+  --text-dim: #b8b4ac;
+  --text-muted: #6a6762;
+
+  /* Legacy + surface tokens */
+  --black: #0a0a0a;
+  --near-black: #111111;
+  --surface: #1a1a1a;
+  --surface-2: #222222;
+  --surface-3: #2c2c2c;
+  --surface-elevated: #1e1e1e;
+
+  --red: #cc2020;
+  --red-light: #e02a2a;
+  --red-dim: #991515;
+  --green-accent: #2a8a55;
+  --green-light: #5ee89a;
+
+  --white: #f5f2ec;
+  --white-dim: #b8b4ac;
+  --white-muted: #6a6762;
+
+  --border: rgba(255, 255, 255, 0.08);
+  --border-red: rgba(204, 32, 32, 0.35);
+
+  --radius: 8px;
+  --radius-lg: 12px;
+  --radius-sm: 4px;
+
+  --nav-height: 72px;
+  --nav-bg: rgba(10, 10, 10, 0.94);
+  --slot-bg: rgba(10, 10, 10, 0.72);
+  --grid-line: rgba(255, 255, 255, 0.013);
+
+  --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.25);
+  --shadow-md: 0 4px 16px rgba(0, 0, 0, 0.35);
+  --shadow-lg: 0 8px 32px rgba(0, 0, 0, 0.45);
+
+  --focus-ring: #cc2020;
+  --transition: 0.2s ease;
+  --transition-slow: 0.3s ease;
+
+  --error: #ff6b6b;
+  --success: #5ee89a;
+}
+
+html.light {
+  --bg: #f0ede8;
+  --text: #1a1814;
+  --text-dim: #3d3a34;
+  --text-muted: #7a7570;
+
+  --black: #f0ede8;
+  --near-black: #e8e4de;
+  --surface: #ffffff;
+  --surface-2: #f5f2ed;
+  --surface-3: #ece8e2;
+  --surface-elevated: #ffffff;
+
+  --red: #b81c1c;
+  --red-light: #cc2020;
+  --red-dim: #8a1414;
+
+  --white: #1a1814;
+  --white-dim: #3d3a34;
+  --white-muted: #7a7570;
+
+  --border: rgba(0, 0, 0, 0.1);
+  --border-red: rgba(184, 28, 28, 0.3);
+
+  --nav-bg: rgba(240, 237, 232, 0.96);
+  --slot-bg: rgba(240, 237, 232, 0.82);
+  --grid-line: rgba(0, 0, 0, 0.04);
+
+  --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.08);
+  --shadow-md: 0 4px 16px rgba(0, 0, 0, 0.1);
+  --shadow-lg: 0 8px 32px rgba(0, 0, 0, 0.12);
+
+  --focus-ring: #b81c1c;
+}

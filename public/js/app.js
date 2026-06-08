@@ -176,26 +176,37 @@ function handleHashRoute() {
   showPage(hash, false);
 }
 
+const MOBILE_NAV_ICON_MENU = '<svg aria-hidden="true" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 6h16M4 12h16M4 18h16"/></svg>';
+const MOBILE_NAV_ICON_CLOSE = '<svg aria-hidden="true" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 6L6 18M6 6l12 12"/></svg>';
+
+function closeMobileNav(btn) {
+  const nav = document.getElementById('mobileNav');
+  if (nav) nav.remove();
+  if (btn) {
+    btn.innerHTML = MOBILE_NAV_ICON_MENU;
+    btn.setAttribute('aria-expanded', 'false');
+  }
+}
+
 function toggleMobileNav(btn) {
   const existing = document.getElementById('mobileNav');
   if (existing) {
-    existing.remove();
-    btn.innerHTML = '&#9776;';
+    closeMobileNav(btn);
     return;
   }
-  btn.innerHTML = '&#10005;';
-  const nav = document.createElement('div');
+  btn.innerHTML = MOBILE_NAV_ICON_CLOSE;
+  btn.setAttribute('aria-expanded', 'true');
+  const nav = document.createElement('nav');
   nav.id = 'mobileNav';
-  nav.style.cssText = 'position:fixed;top:64px;left:0;right:0;background:var(--nav-bg);backdrop-filter:blur(12px);border-bottom:1px solid var(--border);z-index:199;padding:1.5rem;display:flex;flex-direction:column;gap:1rem;';
+  nav.className = 'mobile-nav';
+  nav.setAttribute('aria-label', 'Mobile navigation');
   [['Home', 'home'], ['Services', 'services'], ['Gallery', 'gallery'], ['About', 'about'], ['Book a Detail', 'booking'], ['Privacy', 'privacy']].forEach(([label, page]) => {
     const a = document.createElement('a');
     a.href = '#' + page;
     a.textContent = label;
-    a.style.cssText = 'color:var(--white-dim);text-decoration:none;font-size:0.88rem;letter-spacing:0.1em;text-transform:uppercase;cursor:pointer;padding:0.4rem 0;';
     a.addEventListener('click', (e) => {
       e.preventDefault();
-      nav.remove();
-      btn.innerHTML = '&#9776;';
+      closeMobileNav(btn);
       showPage(page);
     });
     nav.appendChild(a);
@@ -228,14 +239,35 @@ function initReveals() {
 }
 
 function applyGalleryFilter(filter) {
-  document.querySelectorAll('.filter-btn').forEach((b) => b.classList.remove('active'));
-  const activeBtn = document.querySelector(`.filter-btn[data-filter="${filter}"]`);
-  if (activeBtn) activeBtn.classList.add('active');
+  document.querySelectorAll('.filter-btn').forEach((b) => {
+    const isActive = b.dataset.filter === filter;
+    b.classList.toggle('active', isActive);
+    b.setAttribute('aria-pressed', isActive ? 'true' : 'false');
+  });
 
   document.querySelectorAll('#page-gallery .ba-section').forEach((section) => {
     const categories = (section.dataset.category || '').split(',').map((c) => c.trim());
     const show = filter === 'all' || categories.includes(filter);
     section.style.display = show ? '' : 'none';
+  });
+}
+
+function initPhotos() {
+  document.querySelectorAll('[data-photo]').forEach((slot) => {
+    const file = slot.dataset.photo;
+    if (!file) return;
+
+    const img = new Image();
+    img.src = 'photos/' + file;
+    img.alt = slot.dataset.alt || '';
+    img.loading = 'lazy';
+
+    img.onload = () => {
+      const placeholder = slot.querySelector('.slot-placeholder');
+      if (placeholder) placeholder.remove();
+      slot.insertBefore(img, slot.firstChild);
+      slot.classList.add('loaded');
+    };
   });
 }
 
@@ -466,7 +498,11 @@ function resetBookingForm() {
 
   document.getElementById('bookingFormWrap').style.display = '';
   document.getElementById('successMsg').style.display = 'none';
-  document.getElementById('formLoading').style.display = 'none';
+  const loadingEl = document.getElementById('formLoading');
+  if (loadingEl) {
+    loadingEl.style.display = 'none';
+    loadingEl.classList.remove('show');
+  }
   const submitBtn = document.getElementById('submitBtn');
   if (submitBtn) submitBtn.disabled = false;
 
@@ -481,7 +517,8 @@ async function submitBooking() {
   const submitBtn = document.getElementById('submitBtn');
   const loadingEl = document.getElementById('formLoading');
   submitBtn.disabled = true;
-  loadingEl.style.display = 'block';
+  loadingEl.style.display = 'flex';
+  loadingEl.classList.add('show');
 
   const payload = {
     firstName: data.fname,
@@ -519,6 +556,7 @@ async function submitBooking() {
     if (response.ok && result.success) {
       document.getElementById('bookingFormWrap').style.display = 'none';
       loadingEl.style.display = 'none';
+      loadingEl.classList.remove('show');
 
       const displayDate = selectedDate.toLocaleDateString('en-US', {
         weekday: 'long', year: 'numeric', month: 'long', day: 'numeric'
@@ -550,6 +588,7 @@ async function submitBooking() {
       }
       submitBtn.disabled = false;
       loadingEl.style.display = 'none';
+      loadingEl.classList.remove('show');
     }
   } catch (error) {
     console.error('Form submission error:', error);
@@ -559,23 +598,30 @@ async function submitBooking() {
     );
     submitBtn.disabled = false;
     loadingEl.style.display = 'none';
+    loadingEl.classList.remove('show');
   }
+}
+
+function updateThemeButton(isLight) {
+  const btn = document.getElementById('themeBtn');
+  if (!btn) return;
+  btn.innerHTML = isLight
+    ? '<svg aria-hidden="true"><use href="#icon-sun"/></svg>'
+    : '<svg aria-hidden="true"><use href="#icon-moon"/></svg>';
+  btn.setAttribute('aria-pressed', isLight ? 'true' : 'false');
 }
 
 function toggleTheme() {
   const isLight = document.documentElement.classList.toggle('light');
-  const btn = document.getElementById('themeBtn');
-  if (btn) btn.textContent = isLight ? '☀️' : '🌙';
+  updateThemeButton(isLight);
   try { localStorage.setItem('2xtreme-theme', isLight ? 'light' : 'dark'); } catch (e) { /* ignore */ }
 }
 
 function applySavedTheme() {
   try {
-    if (localStorage.getItem('2xtreme-theme') === 'light') {
-      document.documentElement.classList.add('light');
-      const btn = document.getElementById('themeBtn');
-      if (btn) btn.textContent = '☀️';
-    }
+    const isLight = localStorage.getItem('2xtreme-theme') === 'light';
+    if (isLight) document.documentElement.classList.add('light');
+    updateThemeButton(isLight);
   } catch (e) { /* ignore */ }
 }
 
@@ -639,6 +685,7 @@ document.addEventListener('DOMContentLoaded', () => {
   injectFooters();
   injectBookingSocialLinks();
   bindEvents();
+  initPhotos();
   applyGalleryFilter('all');
   toggleDropoffField();
   handleHashRoute();

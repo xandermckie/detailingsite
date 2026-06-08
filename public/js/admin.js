@@ -262,7 +262,40 @@ function changeMonth(dir) {
   loadBookings();
 }
 
+function updateThemeButtons(isLight) {
+  const icon = isLight
+    ? '<svg aria-hidden="true"><use href="#icon-sun"/></svg>'
+    : '<svg aria-hidden="true"><use href="#icon-moon"/></svg>';
+  ['themeBtn', 'themeBtnDash'].forEach((id) => {
+    const btn = document.getElementById(id);
+    if (btn) {
+      btn.innerHTML = icon;
+      btn.setAttribute('aria-pressed', isLight ? 'true' : 'false');
+    }
+  });
+}
+
+function toggleTheme() {
+  const isLight = document.documentElement.classList.toggle('light');
+  updateThemeButtons(isLight);
+  try { localStorage.setItem('2xtreme-theme', isLight ? 'light' : 'dark'); } catch (e) { /* ignore */ }
+}
+
+function applySavedTheme() {
+  try {
+    const isLight = localStorage.getItem('2xtreme-theme') === 'light';
+    if (isLight) document.documentElement.classList.add('light');
+    updateThemeButtons(isLight);
+  } catch (e) { /* ignore */ }
+}
+
 document.addEventListener('DOMContentLoaded', () => {
+  applySavedTheme();
+  ['themeBtn', 'themeBtnDash'].forEach((id) => {
+    const btn = document.getElementById(id);
+    if (btn) btn.addEventListener('click', toggleTheme);
+  });
+
   document.getElementById('loginBtn').addEventListener('click', login);
   document.getElementById('apiKey').addEventListener('keydown', (e) => {
     if (e.key === 'Enter') login();
