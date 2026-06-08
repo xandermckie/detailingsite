@@ -23,8 +23,8 @@ function getTransporter() {
 }
 
 function serviceLabel(service) {
-  if (service === 'pickup_dropoff') return 'Pickup & Drop-off — $200';
-  return 'Mobile Detail — $175';
+  if (service === 'pickup_dropoff') return 'Pickup and drop off ($200)';
+  return 'Mobile Detail ($175)';
 }
 
 async function sendMail(options) {
@@ -52,7 +52,7 @@ async function sendBookingCreated({ bookingId, vehicle, date, time, service, cus
 
   await sendMail({
     to: ownerEmail,
-    subject: `New booking request — ${vehicle}`,
+    subject: `New booking request: ${vehicle}`,
     text: [
       'A new detailing appointment has been requested.',
       '',
@@ -69,7 +69,7 @@ async function sendBookingCreated({ bookingId, vehicle, date, time, service, cus
   if (customerEmail) {
     await sendMail({
       to: customerEmail,
-      subject: 'Appointment request received — 2 The Xtreme Detailing',
+      subject: 'Appointment request received from 2 The Xtreme Detailing',
       text: [
         `Hi ${customerName},`,
         '',
@@ -82,7 +82,7 @@ async function sendBookingCreated({ bookingId, vehicle, date, time, service, cus
         '',
         'We will reach out within 24 hours to confirm your appointment.',
         '',
-        '— 2 The Xtreme Detailing (2nd Chances INC.)'
+        '2 The Xtreme Detailing (2nd Chances INC.)'
       ].join('\n')
     });
   }
@@ -94,7 +94,7 @@ async function sendStatusChange({ customerEmail, customerName, status, vehicle, 
   const statusMessages = {
     confirmed: 'Your appointment has been confirmed!',
     cancelled: 'Your appointment has been cancelled.',
-    completed: 'Thank you — your detail is marked complete.'
+    completed: 'Thank you. Your detail is marked complete.'
   };
 
   const message = statusMessages[status];
@@ -102,7 +102,7 @@ async function sendStatusChange({ customerEmail, customerName, status, vehicle, 
 
   await sendMail({
     to: customerEmail,
-    subject: `Appointment ${status} — 2 The Xtreme Detailing`,
+    subject: `Appointment ${status} from 2 The Xtreme Detailing`,
     text: [
       `Hi ${customerName},`,
       '',
@@ -112,7 +112,7 @@ async function sendStatusChange({ customerEmail, customerName, status, vehicle, 
       `Date: ${date}`,
       `Time: ${time}`,
       '',
-      '— 2 The Xtreme Detailing'
+      '2 The Xtreme Detailing'
     ].join('\n')
   });
 }

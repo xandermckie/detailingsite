@@ -5,13 +5,39 @@ const API_BASE = (location.hostname === 'localhost' || location.hostname === '12
   ? window.location.origin + '/api'
   : RAILWAY_API_ORIGIN + '/api';
 
-const ALL_TIME_SLOTS = ['8:00 AM', '10:00 AM', '12:00 PM'];
 const PAGE_IDS = ['home', 'services', 'gallery', 'about', 'booking', 'privacy'];
 
 const SERVICE_LABELS = {
   mobile: 'Mobile Detail ($175)',
-  pickup_dropoff: 'Pickup & Drop-off ($200)'
+  pickup_dropoff: 'Pickup and drop off ($200)'
 };
+
+const FACEBOOK_URL = window.FACEBOOK_URL || '';
+const TIKTOK_URL = window.TIKTOK_URL || '';
+
+function renderSocialBtn(platform, label, iconId, url) {
+  const inner = `<svg><use href="#${iconId}"/></svg> ${label}`;
+  if (url) {
+    return `<a href="${url}" target="_blank" rel="noopener noreferrer" class="social-btn ${platform}">${inner}</a>`;
+  }
+  return `<span class="social-btn social-btn-disabled ${platform}" aria-disabled="true">${inner}</span>`;
+}
+
+function renderSocialListItem(label, iconId, url) {
+  const icon = `<svg style="width:14px;height:14px;fill:currentColor;"><use href="#${iconId}"/></svg> `;
+  if (url) {
+    return `<li><a href="${url}" target="_blank" rel="noopener noreferrer">${icon}${label}</a></li>`;
+  }
+  return `<li><span class="social-link-disabled">${icon}${label}</span></li>`;
+}
+
+function renderSocialMini(label, iconId, url) {
+  const inner = `<svg><use href="#${iconId}"/></svg> ${label}`;
+  if (url) {
+    return `<a href="${url}" target="_blank" rel="noopener noreferrer">${inner}</a>`;
+  }
+  return `<span class="social-link-disabled">${inner}</span>`;
+}
 
 let selectedDate = null;
 let selectedTime = null;
@@ -32,16 +58,12 @@ function makeFooter() {
     <div class="footer-main">
       <div class="footer-brand">
         <span class="footer-logo">2 The <span>Xtreme</span> Detailing</span>
-        <p>Mobile hand detailing done right. We come to you, no drop-offs needed. Family-run and proud of every car we touch.</p>
+        <p>Mobile hand detailing done right. We come to you. No drop offs needed. Family run and proud of every car we touch.</p>
         <span class="inc-tag">A 2nd Chances INC. Brand</span>
         <p style="font-size:0.8rem;color:var(--white-muted);margin-top:0.75rem;"><a href="mailto:xandermckie@gmail.com" style="color:var(--red);text-decoration:none;">xandermckie@gmail.com</a></p>
         <div class="social-links" style="margin-top:1.25rem;">
-          <a href="https://facebook.com/2theXtremeDetailing" target="_blank" rel="noopener noreferrer" class="social-btn fb">
-            <svg><use href="#icon-fb"/></svg> Facebook
-          </a>
-          <a href="https://tiktok.com/@2theXtremeDetailing" target="_blank" rel="noopener noreferrer" class="social-btn tt">
-            <svg><use href="#icon-tt"/></svg> TikTok
-          </a>
+          ${renderSocialBtn('fb', 'Facebook', 'icon-fb', FACEBOOK_URL)}
+          ${renderSocialBtn('tt', 'TikTok', 'icon-tt', TIKTOK_URL)}
         </div>
       </div>
       <div class="footer-col"><h4>Pages</h4><ul>
@@ -53,22 +75,30 @@ function makeFooter() {
         <li><a href="#privacy" data-page="privacy">Privacy Policy</a></li>
       </ul></div>
       <div class="footer-col"><h4>Pricing</h4><ul>
-        <li><a href="#services" data-page="services">Mobile — $175</a></li>
-        <li><a href="#services" data-page="services">Pickup &amp; Drop-off — $200</a></li>
+        <li><a href="#services" data-page="services">Mobile ($175)</a></li>
+        <li><a href="#services" data-page="services">Pickup and drop off ($200)</a></li>
       </ul></div>
       <div class="footer-col"><h4>Follow Us</h4><ul>
-        <li><a href="https://facebook.com/2theXtremeDetailing" target="_blank" rel="noopener noreferrer"><svg style="width:14px;height:14px;fill:currentColor;"><use href="#icon-fb"/></svg> Facebook</a></li>
-        <li><a href="https://tiktok.com/@2theXtremeDetailing" target="_blank" rel="noopener noreferrer"><svg style="width:14px;height:14px;fill:currentColor;"><use href="#icon-tt"/></svg> TikTok</a></li>
+        ${renderSocialListItem('Facebook', 'icon-fb', FACEBOOK_URL)}
+        ${renderSocialListItem('TikTok', 'icon-tt', TIKTOK_URL)}
       </ul></div>
     </div>
     <div class="footer-bottom">
-      <p>&copy; 2025 2 The Xtreme Detailing &mdash; A 2nd Chances INC. brand. All rights reserved. &middot; <a href="#privacy" data-page="privacy" style="color:var(--white-muted);text-decoration:none;">Privacy</a></p>
+      <p>&copy; 2025 2 The Xtreme Detailing. A 2nd Chances INC. brand. All rights reserved. &middot; <a href="#privacy" data-page="privacy" style="color:var(--white-muted);text-decoration:none;">Privacy</a></p>
       <div class="social-mini">
-        <a href="https://facebook.com/2theXtremeDetailing" target="_blank" rel="noopener noreferrer"><svg><use href="#icon-fb"/></svg> Facebook</a>
-        <a href="https://tiktok.com/@2theXtremeDetailing" target="_blank" rel="noopener noreferrer"><svg><use href="#icon-tt"/></svg> TikTok</a>
+        ${renderSocialMini('Facebook', 'icon-fb', FACEBOOK_URL)}
+        ${renderSocialMini('TikTok', 'icon-tt', TIKTOK_URL)}
       </div>
     </div>
   </footer>`;
+}
+
+function injectBookingSocialLinks() {
+  const container = document.getElementById('bookingSocialLinks');
+  if (!container) return;
+  container.innerHTML =
+    renderSocialBtn('fb', 'Facebook', 'icon-fb', FACEBOOK_URL) +
+    renderSocialBtn('tt', 'TikTok', 'icon-tt', TIKTOK_URL);
 }
 
 function injectFooters() {
@@ -193,14 +223,9 @@ async function fetchAvailability() {
   }
 }
 
-function isWeekend(d) {
-  return d.getDay() === 0 || d.getDay() === 6;
-}
-
-function isFullyBooked(date) {
-  const key = dateKey(date);
-  const blocked = unavailableSlots[key] || [];
-  return ALL_TIME_SLOTS.every((slot) => blocked.includes(slot));
+function isFullyBooked(iso) {
+  const blocked = unavailableSlots[iso] || [];
+  return TIME_SLOTS.every((slot) => blocked.includes(slot));
 }
 
 function renderCalendar() {
@@ -208,8 +233,7 @@ function renderCalendar() {
   const grid = document.getElementById('calDays');
   if (!calMonth || !grid) return;
 
-  const today = new Date();
-  today.setHours(0, 0, 0, 0);
+  const todayIso = getChicagoTodayIso();
   const firstDay = new Date(currentYear, currentMonth, 1);
   const lastDay = new Date(currentYear, currentMonth + 1, 0);
   const months = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
@@ -223,17 +247,17 @@ function renderCalendar() {
   }
 
   for (let d = 1; d <= lastDay.getDate(); d++) {
-    const date = new Date(currentYear, currentMonth, d);
+    const iso = isoFromParts(currentYear, currentMonth, d);
     const el = document.createElement('div');
     el.className = 'cal-day';
     el.textContent = d;
 
-    if (!isWeekend(date) || date < today || isFullyBooked(date)) {
+    if (!isBookableDay(iso) || iso < todayIso || isFullyBooked(iso)) {
       el.classList.add('disabled');
     } else {
-      if (date.toDateString() === today.toDateString()) el.classList.add('today');
-      if (selectedDate && selectedDate.toDateString() === date.toDateString()) el.classList.add('selected');
-      el.addEventListener('click', () => selectDate(date));
+      if (iso === todayIso) el.classList.add('today');
+      if (selectedDate && dateKey(selectedDate) === iso) el.classList.add('selected');
+      el.addEventListener('click', () => selectDate(new Date(currentYear, currentMonth, d)));
     }
     grid.appendChild(el);
   }
@@ -344,10 +368,10 @@ function validateBookingForm() {
   if (!service) { setFieldError('service', 'Please select a service'); valid = false; }
 
   if (service === 'pickup_dropoff' && !dropoffAddress) {
-    setFieldError('dropoffAddress', 'Drop-off address is required');
+    setFieldError('dropoffAddress', 'Drop off address is required');
     valid = false;
   } else if (dropoffAddress && dropoffAddress.length < 5) {
-    setFieldError('dropoffAddress', 'Drop-off address must be at least 5 characters');
+    setFieldError('dropoffAddress', 'Drop off address must be at least 5 characters');
     valid = false;
   }
 
@@ -359,8 +383,8 @@ function validateBookingForm() {
   if (!selectedDate) {
     showFormError('Please select a date.');
     valid = false;
-  } else if (!isWeekend(selectedDate)) {
-    showFormError('Only weekend dates are available.');
+  } else if (!isBookableDay(dateKey(selectedDate))) {
+    showFormError('Only Thursday, Friday, and Saturday are available.');
     valid = false;
   }
 
@@ -565,6 +589,7 @@ function bindEvents() {
 document.addEventListener('DOMContentLoaded', () => {
   applySavedTheme();
   injectFooters();
+  injectBookingSocialLinks();
   bindEvents();
   applyGalleryFilter('all');
   toggleDropoffField();

@@ -14,20 +14,23 @@ process.env.DATABASE_PATH = TEST_DB;
 process.env.NODE_ENV = 'test';
 process.env.SITE_URL = 'http://localhost:3000';
 
-function nextWeekendDate() {
+const { isBookableDay } = require('../src/bookingRules');
+
+function nextBookableDate() {
   const d = new Date();
   d.setHours(12, 0, 0, 0);
-  const day = d.getDay();
-  if (day !== 0 && day !== 6) {
-    d.setDate(d.getDate() + (6 - day));
+  for (let i = 0; i < 14; i++) {
+    const y = d.getFullYear();
+    const m = String(d.getMonth() + 1).padStart(2, '0');
+    const dayNum = String(d.getDate()).padStart(2, '0');
+    const iso = `${y}-${m}-${dayNum}`;
+    if (isBookableDay(iso)) return iso;
+    d.setDate(d.getDate() + 1);
   }
-  const y = d.getFullYear();
-  const m = String(d.getMonth() + 1).padStart(2, '0');
-  const dayNum = String(d.getDate()).padStart(2, '0');
-  return `${y}-${m}-${dayNum}`;
+  throw new Error('No bookable date found within 14 days');
 }
 
-const WEEKEND = nextWeekendDate();
+const BOOKABLE_DATE = nextBookableDate();
 
 function validBooking(overrides = {}) {
   return {
@@ -38,8 +41,8 @@ function validBooking(overrides = {}) {
     vehicle: '2020 Honda Civic',
     address: '123 Main St, City',
     service: 'mobile',
-    date: WEEKEND,
-    time: '8:00 AM',
+    date: BOOKABLE_DATE,
+    time: '9:00 AM',
     notes: '',
     privacyConsent: true,
     ...overrides
@@ -78,15 +81,29 @@ describe('Booking validation', () => {
     expect(res.body.success).toBe(false);
   });
 
-  test('rejects weekday date', async () => {
+  test('rejects non bookable day', async () => {
     const d = new Date();
-    while (d.getDay() === 0 || d.getDay() === 6) d.setDate(d.getDate() + 1);
-    const y = d.getFullYear();
-    const m = String(d.getMonth() + 1).padStart(2, '0');
-    const dayNum = String(d.getDate()).padStart(2, '0');
+    for (let i = 0; i < 14; i++) {
+      const y = d.getFullYear();
+      const m = String(d.getMonth() + 1).padStart(2, '0');
+      const dayNum = String(d.getDate()).padStart(2, '0');
+      const iso = `${y}-${m}-${dayNum}`;
+      if (!isBookableDay(iso)) {
+        const res = await request(app)
+          .post('/api/bookings')
+          .send(validBooking({ date: iso }));
+        expect(res.status).toBe(400);
+        return;
+      }
+      d.setDate(d.getDate() + 1);
+    }
+    throw new Error('No non bookable date found within 14 days');
+  });
+
+  test('rejects invalid time slot', async () => {
     const res = await request(app)
       .post('/api/bookings')
-      .send(validBooking({ date: `${y}-${m}-${dayNum}` }));
+      .send(validBooking({ time: '8:00 AM' }));
     expect(res.status).toBe(400);
   });
 
@@ -100,7 +117,7 @@ describe('Booking validation', () => {
   test('rejects pickup_dropoff without dropoff address', async () => {
     const res = await request(app)
       .post('/api/bookings')
-      .send(validBooking({ service: 'pickup_dropoff', time: '10:00 AM' }));
+      .send(validBooking({ service: 'pickup_dropoff', time: '12:00 PM' }));
     expect(res.status).toBe(400);
   });
 
@@ -131,7 +148,7 @@ describe('Booking creation', () => {
   test('creates a valid booking', async () => {
     const res = await request(app)
       .post('/api/bookings')
-      .send(validBooking({ time: '8:00 AM', email: 'create1@example.com' }));
+      .send(validBooking({ time: '9:00 AM', email: 'create1@example.com' }));
     expect(res.status).toBe(201);
     expect(res.body.success).toBe(true);
     expect(res.body.bookingId).toBeDefined();
@@ -157,20 +174,20 @@ describe('Admin routes', () => {
   beforeAll(async () => {
     const res = await request(app)
       .post('/api/bookings')
-      .send(validBooking({ time: '10:00 AM', email: 'admin-test@example.com' }));
+      .send(validBooking({ time: '3:00 PM', email: 'admin-test@example.com' }));
     expect(res.status).toBe(201);
     bookingId = res.body.bookingId;
   });
 
   test('rejects admin list without API key', async () => {
-    const now = new Date(WEEKEND + 'T12:00:00');
+    const now = new Date(BOOKABLE_DATE + 'T12:00:00');
     const res = await request(app)
       .get(`/api/admin/bookings?year=${now.getFullYear()}&month=${now.getMonth() + 1}`);
     expect(res.status).toBe(401);
   });
 
   test('rejects admin list with invalid API key', async () => {
-    const now = new Date(WEEKEND + 'T12:00:00');
+    const now = new Date(BOOKABLE_DATE + 'T12:00:00');
     const res = await request(app)
       .get(`/api/admin/bookings?year=${now.getFullYear()}&month=${now.getMonth() + 1}`)
       .set('X-API-Key', 'wrong-key');
@@ -178,7 +195,7 @@ describe('Admin routes', () => {
   });
 
   test('lists bookings with valid API key', async () => {
-    const now = new Date(WEEKEND + 'T12:00:00');
+    const now = new Date(BOOKABLE_DATE + 'T12:00:00');
     const res = await request(app)
       .get(`/api/admin/bookings?year=${now.getFullYear()}&month=${now.getMonth() + 1}`)
       .set('X-API-Key', ADMIN_API_KEY);
@@ -206,7 +223,7 @@ describe('Admin routes', () => {
   });
 
   test('rejects admin list with invalid status filter', async () => {
-    const now = new Date(WEEKEND + 'T12:00:00');
+    const now = new Date(BOOKABLE_DATE + 'T12:00:00');
     const res = await request(app)
       .get(`/api/admin/bookings?year=${now.getFullYear()}&month=${now.getMonth() + 1}&status=hacked`)
       .set('X-API-Key', ADMIN_API_KEY);
@@ -214,16 +231,25 @@ describe('Admin routes', () => {
   });
 
   test('cancellation frees availability slot', async () => {
-    const futureDate = new Date(WEEKEND + 'T12:00:00');
+    const futureDate = new Date(BOOKABLE_DATE + 'T12:00:00');
     futureDate.setDate(futureDate.getDate() + 7);
-    const y = futureDate.getFullYear();
-    const m = String(futureDate.getMonth() + 1).padStart(2, '0');
-    const d = String(futureDate.getDate()).padStart(2, '0');
-    const cancelDate = `${y}-${m}-${d}`;
+    let cancelDate = null;
+    for (let i = 0; i < 14; i++) {
+      const y = futureDate.getFullYear();
+      const m = String(futureDate.getMonth() + 1).padStart(2, '0');
+      const d = String(futureDate.getDate()).padStart(2, '0');
+      const iso = `${y}-${m}-${d}`;
+      if (isBookableDay(iso)) {
+        cancelDate = iso;
+        break;
+      }
+      futureDate.setDate(futureDate.getDate() + 1);
+    }
+    if (!cancelDate) throw new Error('No future bookable date found');
 
     const booking = validBooking({
       date: cancelDate,
-      time: '10:00 AM',
+      time: '6:00 PM',
       email: 'cancel-test@example.com'
     });
     const createRes = await request(app).post('/api/bookings').send(booking);
@@ -238,6 +264,6 @@ describe('Admin routes', () => {
     const availRes = await request(app)
       .get(`/api/availability?year=${futureDate.getFullYear()}&month=${futureDate.getMonth() + 1}`);
     const booked = availRes.body.booked[cancelDate] || [];
-    expect(booked).not.toContain('10:00 AM');
+    expect(booked).not.toContain('6:00 PM');
   });
 });

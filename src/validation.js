@@ -1,4 +1,9 @@
 const { body, validationResult } = require('express-validator');
+const {
+  TIME_SLOTS,
+  getChicagoTodayIso,
+  isBookableDay
+} = require('./bookingRules');
 
 const VALID_SERVICES = ['mobile', 'pickup_dropoff'];
 const VALID_STATUSES = ['pending', 'confirmed', 'cancelled', 'completed'];
@@ -51,17 +56,17 @@ const bookingValidationRules = () => {
         const trimmed = (value || '').trim();
         if (req.body.service === 'pickup_dropoff') {
           if (!trimmed || trimmed.length < 5) {
-            throw new Error('Drop-off address is required for pickup & drop-off service');
+            throw new Error('Drop off address is required for pickup and drop off service');
           }
           if (trimmed.length > 500) {
-            throw new Error('Drop-off address must be 5-500 characters');
+            throw new Error('Drop off address must be 5 to 500 characters');
           }
           if (!/^[a-zA-Z0-9\s,.#-]+$/.test(trimmed)) {
-            throw new Error('Drop-off address contains invalid characters');
+            throw new Error('Drop off address contains invalid characters');
           }
         } else if (trimmed) {
           if (trimmed.length < 5 || trimmed.length > 500) {
-            throw new Error('Drop-off address must be 5-500 characters');
+            throw new Error('Drop off address must be 5 to 500 characters');
           }
         }
         return true;
@@ -79,22 +84,19 @@ const bookingValidationRules = () => {
       .notEmpty().withMessage('Date is required')
       .isISO8601().withMessage('Invalid date format')
       .custom((value) => {
-        const date = new Date(value + 'T12:00:00');
-        const today = new Date();
-        today.setHours(0, 0, 0, 0);
-        if (date < today) {
+        const todayIso = getChicagoTodayIso();
+        if (value < todayIso) {
           throw new Error('Cannot book dates in the past');
         }
-        const dayOfWeek = date.getDay();
-        if (dayOfWeek !== 0 && dayOfWeek !== 6) {
-          throw new Error('Only weekend dates (Saturday/Sunday) are available');
+        if (!isBookableDay(value)) {
+          throw new Error('Only Thursday, Friday, and Saturday are available');
         }
         return true;
       }),
 
     body('time')
       .notEmpty().withMessage('Time is required')
-      .isIn(['8:00 AM', '10:00 AM', '12:00 PM']).withMessage('Invalid time selected'),
+      .isIn(TIME_SLOTS).withMessage('Invalid time selected'),
 
     body('notes')
       .optional()

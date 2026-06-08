@@ -5,9 +5,9 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <meta http-equiv="Content-Security-Policy" content="default-src 'self'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src https://fonts.gstatic.com; script-src 'self'; img-src 'self' data: blob:; connect-src 'self' https://detailingsite-production.up.railway.app;" />
   <meta name="referrer" content="no-referrer" />
-  <meta name="description" content="2 The Xtreme Detailing — Premium hand detailing by Aaron & Xander. Full interior and exterior. Part of 2nd Chances INC." />
+  <meta name="description" content="2 The Xtreme Detailing. Premium hand detailing by Aaron and Xander. Full interior and exterior. Part of 2nd Chances INC." />
   <meta property="og:title" content="2 The Xtreme Detailing" />
-  <meta property="og:description" content="Mobile hand detailing done right. We come to you — weekend appointments from $175." />
+  <meta property="og:description" content="Mobile hand detailing done right. We come to you. Thursday through Saturday appointments from $175." />
   <meta property="og:type" content="website" />
   <meta name="twitter:card" content="summary" />
   <link rel="icon" href="favicon.svg" type="image/svg+xml" />
@@ -273,7 +273,7 @@
     .cal-day.today { color: var(--red); }
     .cal-day.today::after { content: ''; position: absolute; bottom: 3px; width: 4px; height: 4px; background: var(--red); border-radius: 50%; }
     .cal-day.today.selected::after { background: var(--white); }
-    .time-slots { display: grid; grid-template-columns: repeat(3, 1fr); gap: 0.5rem; margin-bottom: 1.1rem; }
+    .time-slots { display: grid; grid-template-columns: repeat(4, 1fr); gap: 0.5rem; margin-bottom: 1.1rem; }
     .time-slot { background: var(--surface-2); border: 1px solid var(--border); border-radius: var(--radius); padding: 0.55rem; text-align: center; font-size: 0.8rem; color: var(--white-dim); cursor: pointer; transition: all 0.2s; }
     .time-slot:hover { border-color: var(--border-red); color: var(--white); }
     .time-slot.selected { border-color: var(--red); background: rgba(204,32,32,0.1); color: var(--red); }
@@ -325,6 +325,9 @@
     .social-btn svg { width: 16px; height: 16px; fill: currentColor; flex-shrink: 0; }
     .social-btn.fb:hover { color: #1877f2; border-color: rgba(24,119,242,0.4); }
     .social-btn.tt:hover { color: #f5f5f5; border-color: rgba(255,255,255,0.2); }
+    .social-btn-disabled, .social-link-disabled { opacity: 0.55; cursor: default; pointer-events: none; }
+    .social-btn-disabled:hover { border-color: var(--border); color: var(--white-dim); background: var(--surface); }
+    .social-link-disabled { color: var(--white-muted); font-size: 0.75rem; letter-spacing: 0.1em; text-transform: uppercase; display: inline-flex; align-items: center; gap: 0.35rem; }
 
     /* FOOTER BOTTOM */
     .footer-bottom { padding: 1.25rem 4rem; border-top: 1px solid var(--border); display: flex; justify-content: space-between; align-items: center; gap: 1rem; flex-wrap: wrap; }
@@ -395,7 +398,7 @@
   <span class="dot">|</span>
   <a href="#" data-page="about">2nd Chances INC.</a>
   <span class="dot">|</span>
-  <p>Family-run &mdash; Community-first</p>
+  <p>Family run. Community first.</p>
 </div>
 
 <!-- SVG icon defs (reusable) -->
@@ -409,9 +412,9 @@
   <section id="hero">
     <div class="hero-bg"></div><div class="hero-grid"></div>
     <div style="position:relative;z-index:1;">
-      <div class="hero-badge">&#9632; Mobile Hand Detailing — We Come To You</div>
+      <div class="hero-badge">&#9632; Mobile Hand Detailing. We Come To You</div>
       <h1 class="hero-title">Every<br>Detail.<br><span class="red">Matters.</span></h1>
-      <p class="hero-sub">We come to you. No drop-offs, no waiting rooms — we show up at your location and handle everything by hand, the right way.</p>
+      <p class="hero-sub">We come to you. No drop offs and no waiting rooms. We show up at your location and handle everything by hand, the right way.</p>
       <div class="hero-actions">
         <button class="btn-primary" data-page="booking">Schedule a Detail</button>
         <button class="btn-ghost" data-page="services">See Pricing &amp; Services</button>
@@ -429,7 +432,7 @@
     <div class="section-label">The Process</div>
     <h2 class="section-title">How We <span class="red">Work</span></h2>
     <div class="process-grid reveal">
-      <div class="process-cell"><div class="process-num">01</div><div class="process-title">Full Exterior Wash</div><div class="process-desc">Hand wash and power wash the full exterior — body panels, glass, mirrors, door jambs, all of it.</div></div>
+      <div class="process-cell"><div class="process-num">01</div><div class="process-title">Full Exterior Wash</div><div class="process-desc">Hand wash and power wash the full exterior: body panels, glass, mirrors, door jambs, all of it.</div></div>
       <div class="process-cell"><div class="process-num">02</div><div class="process-title">Wheels, Tires &amp; Engine</div><div class="process-desc">Tires, rims, and wheel wells cleaned and treated. Engine bay degreased and detailed.</div></div>
       <div class="process-cell"><div class="process-num">03</div><div class="process-title">Wax &amp; Protect</div><div class="process-desc">Full wax on all exterior painted surfaces. All windows cleaned inside and out.</div></div>
       <div class="process-cell"><div class="process-num">04</div><div class="process-title">Full Interior Detail</div><div class="process-desc">Vacuum every crevice. Wipe every surface. Treat leather. Work stains. Clean interior glass.</div></div>
@@ -442,7 +445,7 @@
     <h2 class="section-title">Before <span class="red">&amp; After</span></h2>
     <p class="section-body" style="margin-bottom:0;">Real results on real cars.</p>
     <div class="gallery-teaser-grid reveal">
-      <div class="ba-slot slot-large"><div class="slot-placeholder"><span class="ph-ico">&#128247;</span><span class="ph-txt">Feature Photo</span></div><div class="slot-label">Full Detail — Exterior<span class="slot-desc">Best shot here</span></div></div>
+      <div class="ba-slot slot-large"><div class="slot-placeholder"><span class="ph-ico">&#128247;</span><span class="ph-txt">Feature Photo</span></div><div class="slot-label">Full Detail, Exterior<span class="slot-desc">Best shot here</span></div></div>
       <div class="ba-slot"><div class="slot-placeholder"><span class="ph-ico">&#128247;</span><span class="ph-txt">Before</span></div><div class="slot-label">Before</div></div>
       <div class="ba-slot"><div class="slot-placeholder"><span class="ph-ico">&#128247;</span><span class="ph-txt">After</span></div><div class="slot-label">After</div></div>
       <div class="ba-slot"><div class="slot-placeholder"><span class="ph-ico">&#128247;</span><span class="ph-txt">Before</span></div><div class="slot-label">Before</div></div>
@@ -461,7 +464,7 @@
       <div class="testimonial-card"><div class="stars">★★★★★</div><p class="testimonial-text">The engine bay alone was worth every dollar. These two do the work, they don't rush it, and it shows. Genuinely the best my car has looked since I bought it.</p><div class="testimonial-author">James T.</div><div class="testimonial-rel">Friend of the family</div></div>
     </div>
   </section>
-  <div class="cta-strip"><div><h2>Ready to Book Your Detail?</h2><p>Mobile detailing — we come to you. Weekend slots only. No card required.</p></div><button class="btn-white" data-page="booking">Schedule Now — $175</button></div>
+  <div class="cta-strip"><div><h2>Ready to Book Your Detail?</h2><p>Mobile detailing. We come to you. Thursday through Saturday slots only. No card required.</p></div><button class="btn-white" data-page="booking">Schedule Now ($175)</button></div>
   <div id="footer-home"></div>
 </div>
 
@@ -470,20 +473,20 @@
   <div class="page-hero" style="padding-top:5rem;">
     <div class="section-label">What We Offer</div>
     <h1 class="section-title">Services <span class="red">&amp; Pricing</span></h1>
-    <p class="section-body">We are a mobile detailing service — we come to you. No tiers, no upsells. The only variable is whether you need us to move your vehicle when we're done.</p>
+    <p class="section-body">We are a mobile detailing service. We come to you. No tiers and no upsells. The only variable is whether you need us to move your vehicle when we are done.</p>
     <div class="services-full-grid reveal">
       <div class="service-card featured">
-        <div class="service-badge">Mobile — We Come To You</div><div class="service-name">Mobile Detail</div>
+        <div class="service-badge">Mobile. We Come To You</div><div class="service-name">Mobile Detail</div>
         <div class="service-price-block"><div class="price-num">$175</div><div class="price-label">per vehicle / we come to you</div></div>
         <ul class="service-list">
-          <li>Full hand wash &amp; power wash</li><li>Tire, wheel &amp; rim cleaning and treatment</li><li>Engine bay cleaning</li><li>All exterior windows cleaned</li><li>Full wax on all painted surfaces</li><li>Complete interior vacuum — seats, floors, all crevices</li><li>Dashboard, console &amp; all interior surface wipe-down</li><li>Leather treatment &amp; conditioning</li><li>Stain treatment &amp; removal</li><li>Interior window cleaning (all glass)</li>
+          <li>Full hand wash and power wash</li><li>Tire, wheel and rim cleaning and treatment</li><li>Engine bay cleaning</li><li>All exterior windows cleaned</li><li>Full wax on all painted surfaces</li><li>Complete interior vacuum: seats, floors, all crevices</li><li>Dashboard, console and all interior surface wipe down</li><li>Leather treatment and conditioning</li><li>Stain treatment and removal</li><li>Interior window cleaning (all glass)</li>
         </ul>
       </div>
       <div class="service-card">
-        <div class="service-badge">Pickup &amp; Drop-off</div><div class="service-name">Vehicle Move</div>
+        <div class="service-badge">Pickup and Drop off</div><div class="service-name">Vehicle Move</div>
         <div class="service-price-block"><div class="price-num">$200</div><div class="price-label">+$25 for vehicle transport</div></div>
         <ul class="service-list">
-          <li>Everything in the standard mobile detail</li><li>We come to your location and handle everything on-site</li><li>We can move the vehicle to a second address if needed</li><li>Stay home, stay at work — we handle it wherever the car is</li>
+          <li>Everything in the standard mobile detail</li><li>We come to your location and handle everything on site</li><li>We can move the vehicle to a second address if needed</li><li>Stay home or stay at work. We handle it wherever the car is</li>
         </ul>
         <div style="margin-top:1.5rem;padding-top:1.5rem;border-top:1px solid var(--border);"><p style="font-size:0.82rem;color:var(--white-muted);line-height:1.65;">The extra $25 covers us picking up and dropping off your vehicle. The work itself is identical.</p></div>
       </div>
@@ -497,13 +500,13 @@
       <div class="breakdown-block">
         <div class="breakdown-header"><div class="breakdown-icon">&#127775;</div><div class="breakdown-title">Exterior</div></div>
         <ul class="breakdown-list">
-          <li><span class="check">&#9724;</span>Full hand wash of body panels, roof, hood, trunk</li><li><span class="check">&#9724;</span>Power wash under wheel wells and lower panels</li><li><span class="check">&#9724;</span>Tire cleaning and dressing</li><li><span class="check">&#9724;</span>Wheel and rim deep clean</li><li><span class="check">&#9724;</span>Engine bay degreased and detailed</li><li><span class="check">&#9724;</span>All exterior glass cleaned streak-free</li><li><span class="check">&#9724;</span>Door jambs wiped down</li><li><span class="check">&#9724;</span>Full wax applied to all painted surfaces</li><li><span class="check">&#9724;</span>Mirrors cleaned and treated</li>
+          <li><span class="check">&#9724;</span>Full hand wash of body panels, roof, hood, trunk</li><li><span class="check">&#9724;</span>Power wash under wheel wells and lower panels</li><li><span class="check">&#9724;</span>Tire cleaning and dressing</li><li><span class="check">&#9724;</span>Wheel and rim deep clean</li><li><span class="check">&#9724;</span>Engine bay degreased and detailed</li><li><span class="check">&#9724;</span>All exterior glass cleaned streak free</li><li><span class="check">&#9724;</span>Door jambs wiped down</li><li><span class="check">&#9724;</span>Full wax applied to all painted surfaces</li><li><span class="check">&#9724;</span>Mirrors cleaned and treated</li>
         </ul>
       </div>
       <div class="breakdown-block">
         <div class="breakdown-header"><div class="breakdown-icon">&#128388;</div><div class="breakdown-title">Interior</div></div>
         <ul class="breakdown-list">
-          <li><span class="check">&#9724;</span>Full vacuum — seats, floor mats, carpet, trunk</li><li><span class="check">&#9724;</span>Crevice vacuum between seats, consoles, vents</li><li><span class="check">&#9724;</span>Dashboard and cluster wipe-down</li><li><span class="check">&#9724;</span>Center console and door panels cleaned</li><li><span class="check">&#9724;</span>Leather seats treated and conditioned</li><li><span class="check">&#9724;</span>Fabric seat stain treatment</li><li><span class="check">&#9724;</span>All interior windows and windshield cleaned</li><li><span class="check">&#9724;</span>Cup holders, pockets, and storage areas cleaned</li><li><span class="check">&#9724;</span>Headliner spot-cleaned as needed</li>
+          <li><span class="check">&#9724;</span>Full vacuum: seats, floor mats, carpet, trunk</li><li><span class="check">&#9724;</span>Crevice vacuum between seats, consoles, vents</li><li><span class="check">&#9724;</span>Dashboard and cluster wipe down</li><li><span class="check">&#9724;</span>Center console and door panels cleaned</li><li><span class="check">&#9724;</span>Leather seats treated and conditioned</li><li><span class="check">&#9724;</span>Fabric seat stain treatment</li><li><span class="check">&#9724;</span>All interior windows and windshield cleaned</li><li><span class="check">&#9724;</span>Cup holders, pockets, and storage areas cleaned</li><li><span class="check">&#9724;</span>Headliner spot cleaned as needed</li>
         </ul>
       </div>
     </div>
@@ -514,15 +517,15 @@
     <div class="section-label">Common Questions</div>
     <h2 class="section-title">FAQ</h2>
     <div class="faq-grid reveal">
-      <div class="faq-item"><div class="faq-q">Do you take payment through the site?</div><div class="faq-a">No — payment is always handled in person on the day of the detail. No card information is collected anywhere on this site.</div></div>
+      <div class="faq-item"><div class="faq-q">Do you take payment through the site?</div><div class="faq-a">No. Payment is always handled in person on the day of the detail. No card information is collected anywhere on this site.</div></div>
       <div class="faq-item"><div class="faq-q">How long will my detail take?</div><div class="faq-a">Minimum three hours, often more depending on vehicle size and condition. We don't rush. If it needs more time, it gets more time.</div></div>
-      <div class="faq-item"><div class="faq-q">Do you work on all vehicle types?</div><div class="faq-a">Yes — cars, trucks, SUVs, and vans. Pricing is per vehicle regardless of size. Mention anything unusual in your booking notes.</div></div>
+      <div class="faq-item"><div class="faq-q">Do you work on all vehicle types?</div><div class="faq-a">Yes. Cars, trucks, SUVs, and vans. Pricing is per vehicle regardless of size. Mention anything unusual in your booking notes.</div></div>
       <div class="faq-item"><div class="faq-q">What if I have heavy staining?</div><div class="faq-a">We work stains as part of the standard detail. Let us know in advance and we'll address it. Not every stain is removable but we always give it a proper attempt.</div></div>
-      <div class="faq-item"><div class="faq-q">When are you available?</div><div class="faq-a">Weekends only — Saturdays and Sundays. 8 AM, 10 AM, and 12 PM start times. Slots are limited so book ahead if you can.</div></div>
-      <div class="faq-item"><div class="faq-q">What's included in the engine cleaning?</div><div class="faq-a">We degrease and clean the accessible engine bay — removing built-up grime and leaving it presentable. Included in the standard package.</div></div>
+      <div class="faq-item"><div class="faq-q">When are you available?</div><div class="faq-a">Thursday, Friday, and Saturday only. Start times are 9 AM, 12 PM, 3 PM, or 6 PM Central time. Slots are limited so book ahead if you can.</div></div>
+      <div class="faq-item"><div class="faq-q">What's included in the engine cleaning?</div><div class="faq-a">We degrease and clean the accessible engine bay, removing built up grime and leaving it presentable. Included in the standard package.</div></div>
     </div>
   </section>
-  <div class="cta-strip"><div><h2>Ready to Book?</h2><p>Mobile detailing — we come to you. No card required.</p></div><button class="btn-white" data-page="booking">Schedule Your Detail</button></div>
+  <div class="cta-strip"><div><h2>Ready to Book?</h2><p>Mobile detailing. We come to you. No card required.</p></div><button class="btn-white" data-page="booking">Schedule Your Detail</button></div>
   <div id="footer-services"></div>
 </div>
 
@@ -531,7 +534,7 @@
   <section style="padding-top:5rem;background:var(--near-black);">
     <div class="section-label">Our Work</div>
     <h1 class="section-title">Photo <span class="red">Gallery</span></h1>
-    <p class="section-body">Real cars, real results. Photos coming soon — drop files into <code>photos/</code> using the filenames listed in each slot.</p>
+    <p class="section-body">Real cars, real results. Photos coming soon. Drop files into <code>photos/</code> using the filenames listed in each slot.</p>
     <!-- PHOTO_MANIFEST: car1-exterior-before.jpg, car1-exterior-after.jpg, car1-interior-before.jpg, car1-interior-after.jpg, wheel-detail.jpg, wax-paint.jpg, engine-bay.jpg, exterior-1.jpg, exterior-2.jpg, exterior-3.jpg, car2-exterior-before.jpg, car2-exterior-after.jpg, car2-interior-before.jpg, car2-interior-after.jpg, interior-seats.jpg, interior-dashboard.jpg, interior-flooring.jpg, interior-console.jpg, interior-stain.jpg, interior-glass.jpg, car3-ba-1-before.jpg, car3-ba-1-after.jpg, car3-ba-2-before.jpg, car3-ba-2-after.jpg, car3-ba-3-before.jpg, car3-ba-3-after.jpg, team-aaron-xander.jpg, team-aaron.jpg, team-xander.jpg, hero-feature.jpg -->
     <div class="gallery-filter-bar reveal">
       <button class="filter-btn active" data-filter="all">All</button>
@@ -543,10 +546,10 @@
   </section>
   <section style="background:var(--black);padding-top:2rem;">
     <div class="ba-section reveal" data-category="before-after,exterior,interior">
-      <div class="ba-section-label">Before &amp; After — Car 1</div>
+      <div class="ba-section-label">Before and After, Car 1</div>
       <div class="ba-grid cols-2">
-        <div class="ba-pair"><div class="ba-slot"><div class="slot-placeholder"><span class="ph-ico">&#128247;</span><span class="ph-txt">Before — Exterior</span></div><div class="slot-label">Before<span class="slot-desc">Exterior</span></div></div><div class="ba-slot"><div class="slot-placeholder"><span class="ph-ico">&#10003;</span><span class="ph-txt">After — Exterior</span></div><div class="slot-label">After<span class="slot-desc">Exterior</span></div></div></div>
-        <div class="ba-pair"><div class="ba-slot"><div class="slot-placeholder"><span class="ph-ico">&#128247;</span><span class="ph-txt">Before — Interior</span></div><div class="slot-label">Before<span class="slot-desc">Interior</span></div></div><div class="ba-slot"><div class="slot-placeholder"><span class="ph-ico">&#10003;</span><span class="ph-txt">After — Interior</span></div><div class="slot-label">After<span class="slot-desc">Interior</span></div></div></div>
+        <div class="ba-pair"><div class="ba-slot"><div class="slot-placeholder"><span class="ph-ico">&#128247;</span><span class="ph-txt">Before, Exterior</span></div><div class="slot-label">Before<span class="slot-desc">Exterior</span></div></div><div class="ba-slot"><div class="slot-placeholder"><span class="ph-ico">&#10003;</span><span class="ph-txt">After, Exterior</span></div><div class="slot-label">After<span class="slot-desc">Exterior</span></div></div></div>
+        <div class="ba-pair"><div class="ba-slot"><div class="slot-placeholder"><span class="ph-ico">&#128247;</span><span class="ph-txt">Before, Interior</span></div><div class="slot-label">Before<span class="slot-desc">Interior</span></div></div><div class="ba-slot"><div class="slot-placeholder"><span class="ph-ico">&#10003;</span><span class="ph-txt">After, Interior</span></div><div class="slot-label">After<span class="slot-desc">Interior</span></div></div></div>
       </div>
     </div>
     <div class="ba-section reveal" style="margin-top:3rem;" data-category="exterior,engine">
@@ -561,7 +564,7 @@
       </div>
     </div>
     <div class="ba-section reveal" style="margin-top:3rem;" data-category="before-after,exterior,interior">
-      <div class="ba-section-label">Before &amp; After — Car 2</div>
+      <div class="ba-section-label">Before and After, Car 2</div>
       <div class="ba-grid cols-2">
         <div class="ba-pair"><div class="ba-slot"><div class="slot-placeholder"><span class="ph-ico">&#128247;</span><span class="ph-txt">Before</span></div><div class="slot-label">Before<span class="slot-desc">Exterior</span></div></div><div class="ba-slot"><div class="slot-placeholder"><span class="ph-ico">&#10003;</span><span class="ph-txt">After</span></div><div class="slot-label">After<span class="slot-desc">Exterior</span></div></div></div>
         <div class="ba-pair"><div class="ba-slot"><div class="slot-placeholder"><span class="ph-ico">&#128247;</span><span class="ph-txt">Before</span></div><div class="slot-label">Before<span class="slot-desc">Interior</span></div></div><div class="ba-slot"><div class="slot-placeholder"><span class="ph-ico">&#10003;</span><span class="ph-txt">After</span></div><div class="slot-label">After<span class="slot-desc">Interior</span></div></div></div>
@@ -579,7 +582,7 @@
       </div>
     </div>
     <div class="ba-section reveal" style="margin-top:3rem;margin-bottom:1rem;" data-category="before-after">
-      <div class="ba-section-label">Before &amp; After — Car 3</div>
+      <div class="ba-section-label">Before and After, Car 3</div>
       <div class="ba-grid cols-3">
         <div class="ba-pair"><div class="ba-slot"><div class="slot-placeholder"><span class="ph-ico">&#128247;</span></div><div class="slot-label">Before</div></div><div class="ba-slot"><div class="slot-placeholder"><span class="ph-ico">&#10003;</span></div><div class="slot-label">After</div></div></div>
         <div class="ba-pair"><div class="ba-slot"><div class="slot-placeholder"><span class="ph-ico">&#128247;</span></div><div class="slot-label">Before</div></div><div class="ba-slot"><div class="slot-placeholder"><span class="ph-ico">&#10003;</span></div><div class="slot-label">After</div></div></div>
@@ -598,16 +601,16 @@
     <h1 class="section-title">Aaron <span class="red">&amp;</span> Xander</h1>
     <div class="about-story reveal">
       <div class="section-body">
-        <p>This started before I could even reach the roof of a car. My dad Aaron has been doing this for as long as I can remember, and growing up I was always right there next to him learning. You don't realize it at the time, but that's where the standard gets set — watching someone who actually takes pride in the work.</p>
+        <p>This started before I could even reach the roof of a car. My dad Aaron has been doing this for as long as I can remember, and growing up I was always right there next to him learning. You do not realize it at the time, but that is where the standard gets set. Watching someone who actually takes pride in the work.</p>
         <p>We started doing details together a few years ago and haven't stopped. Most of what we've done has been for family and close friends. People we know, cars we care about. That's still mostly who we do it for. When you're working on a car that belongs to someone you'll see at the dinner table, you don't cut corners. You do the whole job.</p>
-        <p><strong>Over ten years of this</strong> means we've seen everything. Cars that looked like they'd never been cleaned a day in their lives. Interiors that were genuinely rough. Engine bays that hadn't been touched since the car was purchased. We handle all of it the same way — by hand, with real attention, and without looking at the clock.</p>
+        <p><strong>Over ten years of this</strong> means we have seen everything. Cars that looked like they had never been cleaned a day in their lives. Interiors that were genuinely rough. Engine bays that had not been touched since the car was purchased. We handle all of it the same way: by hand, with real attention, and without looking at the clock.</p>
         <p>We're not a shop. There's no franchise behind us, no production line pushing us through cars. It's just the two of us, and we treat every vehicle like it belongs to someone we know. Because it usually does.</p>
         <p>We've kept it small and honest intentionally. We'd rather do fewer details and do them right than run a volume operation that isn't actually proud of the results. That's always been the standard, and it's not changing.</p>
       </div>
       <div>
         <div class="about-photo-block">
           <div class="about-photo-slot"><div class="slot-placeholder"><span class="ph-ico" style="font-size:2.5rem;">&#128247;</span><span class="ph-txt">Photo of Aaron &amp; Xander</span></div></div>
-          <div class="about-photo-caption"><h4>Aaron &amp; Xander</h4><p>2 The Xtreme Detailing — Family, doing the work right.</p></div>
+          <div class="about-photo-caption"><h4>Aaron and Xander</h4><p>2 The Xtreme Detailing. Family, doing the work right.</p></div>
         </div>
       </div>
     </div>
@@ -619,11 +622,11 @@
     <div class="about-team-grid reveal">
       <div class="team-card">
         <div class="team-photo"><div class="slot-placeholder"><span class="ph-ico" style="font-size:2rem;">&#128247;</span><span class="ph-txt">Photo of Aaron</span></div></div>
-        <div class="team-info"><div class="team-name">Aaron</div><div class="team-role">Co-founder — The OG</div><p class="team-bio">Aaron's been detailing since before it was a business. He's the one who set the standard — if the work isn't done right, it doesn't leave the driveway. More than a decade of doing this the hard way, by hand, has a way of building real skill. Also the one who can get stains out that most people would call permanent.</p></div>
+        <div class="team-info"><div class="team-name">Aaron</div><div class="team-role">Co founder, The OG</div><p class="team-bio">Aaron has been detailing since before it was a business. He is the one who set the standard. If the work is not done right, it does not leave the driveway. More than a decade of doing this the hard way, by hand, has a way of building real skill. Also the one who can get stains out that most people would call permanent.</p></div>
       </div>
       <div class="team-card">
         <div class="team-photo"><div class="slot-placeholder"><span class="ph-ico" style="font-size:2rem;">&#128247;</span><span class="ph-txt">Photo of Xander</span></div></div>
-        <div class="team-info"><div class="team-name">Xander</div><div class="team-role">Co-founder — The Other Half</div><p class="team-bio">Grew up doing this alongside Aaron and eventually turned it into something we do together on a real basis. CS student by day, detailer on weekends. The reason this site exists and the reason the operation's been growing. Same standard as always — do it right or don't do it.</p></div>
+        <div class="team-info"><div class="team-name">Xander</div><div class="team-role">Co founder, The Other Half</div><p class="team-bio">Grew up doing this alongside Aaron and eventually turned it into something we do together on a real basis. CS student by day, detailer on Thursday through Saturday. The reason this site exists and the reason the operation has been growing. Same standard as always. Do it right or do not do it.</p></div>
       </div>
     </div>
   </section>
@@ -634,10 +637,10 @@
     <div class="values-grid reveal">
       <div class="value-card"><div class="value-icon">&#9995;</div><div class="value-title">Always By Hand</div><p class="value-desc">No automated washes, no shortcuts. Every inch is touched by a person who knows what they're looking at and cares what it looks like when they're done.</p></div>
       <div class="value-card"><div class="value-icon">&#9200;</div><div class="value-title">Time Done Right</div><p class="value-desc">Three hours minimum is the honest answer. If the car needs more time to be done properly, it gets more time. We don't set a timer and stop.</p></div>
-      <div class="value-card"><div class="value-icon">&#128101;</div><div class="value-title">Family Standard</div><p class="value-desc">We've been doing this for family and friends. That means treating every car like it belongs to someone who matters — because it usually does.</p></div>
-      <div class="value-card"><div class="value-icon">&#128682;</div><div class="value-title">Full Job Only</div><p class="value-desc">Interior and exterior, engine to carpet. We don't do half-details. Leaving anything out would mean the work isn't finished.</p></div>
-      <div class="value-card"><div class="value-icon">&#128274;</div><div class="value-title">No Payment On-Site</div><p class="value-desc">No card info, no payment processor on this site. You pay in person on the day — cash or agreed method. Simple and secure.</p></div>
-      <div class="value-card"><div class="value-icon">&#128220;</div><div class="value-title">No Upsells</div><p class="value-desc">One price. One package. We don't nickel-and-dime you for things that should already be part of a proper detail.</p></div>
+      <div class="value-card"><div class="value-icon">&#128101;</div><div class="value-title">Family Standard</div><p class="value-desc">We have been doing this for family and friends. That means treating every car like it belongs to someone who matters, because it usually does.</p></div>
+      <div class="value-card"><div class="value-icon">&#128682;</div><div class="value-title">Full Job Only</div><p class="value-desc">Interior and exterior, engine to carpet. We do not do half details. Leaving anything out would mean the work is not finished.</p></div>
+      <div class="value-card"><div class="value-icon">&#128274;</div><div class="value-title">No Payment On Site</div><p class="value-desc">No card info and no payment processor on this site. You pay in person on the day, cash or agreed method. Simple and secure.</p></div>
+      <div class="value-card"><div class="value-icon">&#128220;</div><div class="value-title">No Upsells</div><p class="value-desc">One price. One package. We do not nickel and dime you for things that should already be part of a proper detail.</p></div>
     </div>
   </section>
   <div class="divider" style="margin:0 4rem;"></div>
@@ -649,11 +652,11 @@
       <div>
         <div class="inc-label">About 2nd Chances INC.</div>
         <div class="inc-name">2nd Chances INC.</div>
-        <p class="inc-desc">2 The Xtreme Detailing is one part of 2nd Chances INC. — a family-run organization built on the idea that good work, done honestly, is worth doing. 2nd Chances INC. exists to create real opportunities: for the people running these businesses, and for the communities around them. We believe in starting small, doing it right, and building something that lasts. Detailing is where we started, and it reflects the same values that run through everything else we do — quality work, no shortcuts, and real accountability to the people we serve.</p>
+        <p class="inc-desc">2 The Xtreme Detailing is one part of 2nd Chances INC., a family run organization built on the idea that good work, done honestly, is worth doing. 2nd Chances INC. exists to create real opportunities for the people running these businesses and for the communities around them. We believe in starting small, doing it right, and building something that lasts. Detailing is where we started, and it reflects the same values that run through everything else we do: quality work, no shortcuts, and real accountability to the people we serve.</p>
       </div>
       <div class="inc-logo-block">
         <div class="inc-logo-mark">2nd<br>Chances<br>INC.</div>
-        <div class="inc-logo-sub">Family-run &middot; Community-first</div>
+        <div class="inc-logo-sub">Family run &middot; Community first</div>
       </div>
     </div>
   </section>
@@ -662,7 +665,7 @@
       <h3>Get In Touch</h3>
       <p style="color:var(--white-dim);font-size:0.9rem;line-height:1.75;margin-bottom:0.5rem;">Questions before booking? Reach out directly.</p>
       <p style="font-size:0.9rem;"><strong style="color:var(--white);">Email:</strong> <a href="mailto:xandermckie@gmail.com">xandermckie@gmail.com</a></p>
-      <p style="font-size:0.85rem;color:var(--white-muted);margin-top:0.75rem;">We respond within 24 hours — same as booking confirmations.</p>
+      <p style="font-size:0.85rem;color:var(--white-muted);margin-top:0.75rem;">We respond within 24 hours, same as booking confirmations.</p>
     </div>
   </section>
   <div class="cta-strip"><div><h2>Let's Get Your Car Right</h2><p>Same standard we've always held. Book anytime.</p></div><button class="btn-white" data-page="booking">Book a Detail</button></div>
@@ -679,9 +682,9 @@
       <p>2 The Xtreme Detailing (a 2nd Chances INC. brand) collects only the information needed to schedule and perform mobile detailing services.</p>
       <h2>What We Collect</h2>
       <ul>
-        <li>Name, email, and phone number — to confirm your appointment</li>
-        <li>Vehicle information — to prepare for your detail</li>
-        <li>Service address (and drop-off address if applicable) — so we know where to go</li>
+        <li>Name, email, and phone number to confirm your appointment</li>
+        <li>Vehicle information to prepare for your detail</li>
+        <li>Service address (and drop off address if applicable) so we know where to go</li>
         <li>Optional notes about your vehicle</li>
       </ul>
       <h2>How We Protect Your Data</h2>
@@ -706,19 +709,19 @@
     <h1 class="section-title">Book Your <span class="red">Detail</span></h1>
     <div class="booking-layout reveal">
       <div class="booking-sidebar">
-        <p>Pick a date and time below. We'll confirm within 24 hours and show up at your location. <strong>No card required — payment is cash in person when we arrive.</strong></p>
+        <p>Pick a date and time below. We will confirm within 24 hours and show up at your location. <strong>No card required. Payment is cash in person when we arrive.</strong></p>
         <div class="sidebar-card">
           <div class="sidebar-card-header">Pricing</div>
           <div class="sidebar-card-body">
             <div class="price-row"><span class="price-row-label">Mobile Detail</span><span class="price-row-val">$175</span></div>
-            <div class="price-row"><span class="price-row-label">Pickup &amp; Drop-off</span><span class="price-row-val">$200</span></div>
+            <div class="price-row"><span class="price-row-label">Pickup and Drop off</span><span class="price-row-val">$200</span></div>
           </div>
         </div>
         <div class="sidebar-card">
           <div class="sidebar-card-header">Availability</div>
           <div class="sidebar-card-body">
-            <div class="info-row"><span class="info-row-ico">&#128197;</span><span class="info-row-txt"><strong>Weekends only</strong> — Saturday &amp; Sunday</span></div>
-            <div class="info-row"><span class="info-row-ico">&#9200;</span><span class="info-row-txt"><strong>Start times:</strong> 8 AM, 10 AM, or 12 PM</span></div>
+            <div class="info-row"><span class="info-row-ico">&#128197;</span><span class="info-row-txt"><strong>Days:</strong> Thursday, Friday, and Saturday</span></div>
+            <div class="info-row"><span class="info-row-ico">&#9200;</span><span class="info-row-txt"><strong>Start times:</strong> 9 AM, 12 PM, 3 PM, or 6 PM Central time</span></div>
             <div class="info-row"><span class="info-row-ico">&#9201;</span><span class="info-row-txt"><strong>Duration:</strong> Plan for 3+ hours</span></div>
             <div class="info-row"><span class="info-row-ico">&#128274;</span><span class="info-row-txt"><strong>Payment:</strong> In person only. No card info collected here.</span></div>
           </div>
@@ -727,17 +730,14 @@
           <div class="sidebar-card-header">Follow Us</div>
           <div class="sidebar-card-body" style="padding-bottom:1.25rem;">
             <p style="font-size:0.8rem;color:var(--white-muted);line-height:1.6;margin-bottom:1rem;">See our latest work and updates on social media.</p>
-            <div style="display:flex;flex-direction:column;gap:0.6rem;">
-              <a href="https://facebook.com/2theXtremeDetailing" target="_blank" rel="noopener noreferrer" class="social-btn fb"><svg><use href="#icon-fb"/></svg> Facebook</a>
-              <a href="https://tiktok.com/@2theXtremeDetailing" target="_blank" rel="noopener noreferrer" class="social-btn tt"><svg><use href="#icon-tt"/></svg> TikTok</a>
-            </div>
+            <div id="bookingSocialLinks" style="display:flex;flex-direction:column;gap:0.6rem;"></div>
           </div>
         </div>
       </div>
       <div>
         <div class="booking-form-wrap" id="bookingFormWrap">
           <div class="form-title">Request an Appointment</div>
-          <div class="no-payment-note"><strong>No payment taken here.</strong> This form is for scheduling only. We come to your location — you pay in person when we arrive.</div>
+          <div class="no-payment-note"><strong>No payment taken here.</strong> This form is for scheduling only. We come to your location. You pay in person when we arrive.</div>
           <div class="form-row">
             <div class="form-group"><label for="fname">First Name</label><input type="text" id="fname" autocomplete="given-name" placeholder="First" /></div>
             <div class="form-group"><label for="lname">Last Name</label><input type="text" id="lname" autocomplete="family-name" placeholder="Last" /></div>
@@ -752,17 +752,17 @@
           <div class="form-group"><label for="service">Service</label>
             <select id="service">
               <option value="">Select a service</option>
-              <option value="mobile">Mobile Detail — $175</option>
-              <option value="pickup_dropoff">Pickup &amp; Drop-off — $200</option>
+              <option value="mobile">Mobile Detail ($175)</option>
+              <option value="pickup_dropoff">Pickup and drop off ($200)</option>
             </select>
             <div class="field-error" id="serviceError"></div>
           </div>
           <div class="form-group dropoff-group" id="dropoffGroup">
-            <label for="dropoffAddress">Drop-off Address</label>
+            <label for="dropoffAddress">Drop off Address</label>
             <input type="text" id="dropoffAddress" autocomplete="street-address" placeholder="Where should we take the vehicle when done?" />
             <div class="field-error" id="dropoffAddressError"></div>
           </div>
-          <span class="cal-label">Select a Date (Weekends Only)</span>
+          <span class="cal-label">Select a Date (Thursday through Saturday)</span>
           <div class="calendar-wrap">
             <div class="cal-header"><button type="button" class="cal-nav" data-cal-nav="-1">&#8249;</button><span class="cal-month" id="calMonth"></span><button type="button" class="cal-nav" data-cal-nav="1">&#8250;</button></div>
             <div class="cal-days-header"><div class="cal-day-name">Su</div><div class="cal-day-name">Mo</div><div class="cal-day-name">Tu</div><div class="cal-day-name">We</div><div class="cal-day-name">Th</div><div class="cal-day-name">Fr</div><div class="cal-day-name">Sa</div></div>
@@ -771,9 +771,10 @@
           </div>
           <span class="cal-label">Select a Start Time</span>
           <div class="time-slots" id="timeSlots">
-            <div class="time-slot" data-time="8:00 AM">8:00 AM</div>
-            <div class="time-slot" data-time="10:00 AM">10:00 AM</div>
+            <div class="time-slot" data-time="9:00 AM">9:00 AM</div>
             <div class="time-slot" data-time="12:00 PM">12:00 PM</div>
+            <div class="time-slot" data-time="3:00 PM">3:00 PM</div>
+            <div class="time-slot" data-time="6:00 PM">6:00 PM</div>
           </div>
           <div class="form-group"><label for="notes">Notes (Optional)</label><textarea id="notes" placeholder="Specific stains, unusual vehicle size, access notes..."></textarea></div>
           <div class="consent-row">
@@ -797,6 +798,7 @@
 </div>
 
 <script src="js/config.js"></script>
+<script src="js/bookingRules.js"></script>
 <script src="js/app.js" defer></script>
 </body>
 </html>
