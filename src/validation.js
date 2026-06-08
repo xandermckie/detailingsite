@@ -42,7 +42,7 @@ const bookingValidationRules = () => {
 
     body('service')
       .notEmpty().withMessage('Service is required')
-      .isIn(['dropoff']).withMessage('Invalid service selected'),
+      .isIn(['mobile']).withMessage('Invalid service selected'),
 
     body('date')
       .notEmpty().withMessage('Date is required')

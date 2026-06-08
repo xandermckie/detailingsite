@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src https://fonts.gstatic.com; script-src 'self' 'unsafe-inline'; img-src 'self' data: blob:; connect-src 'self' https://detailingsite-production.up.railway.app;" />
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src https://fonts.gstatic.com; script-src 'self'; img-src 'self' data: blob:; connect-src 'self' https://detailingsite-production.up.railway.app;" />
   <meta name="referrer" content="no-referrer" />
   <meta name="description" content="2 The Xtreme Detailing — Premium hand detailing by Aaron & Xander. Full interior and exterior. Part of 2nd Chances INC." />
   <title>2 The Xtreme Detailing</title>
@@ -354,23 +354,23 @@
 
 <!-- NAV -->
 <nav>
-  <div class="nav-logo" onclick="showPage('home')">2 The <span class="red">Xtreme</span><span class="sub">Detailing</span></div>
+  <div class="nav-logo" data-page="home" role="button" tabindex="0">2 The <span class="red">Xtreme</span><span class="sub">Detailing</span></div>
   <ul class="nav-links">
-    <li><a onclick="showPage('home')" id="nav-home">Home</a></li>
-    <li><a onclick="showPage('services')" id="nav-services">Services</a></li>
-    <li><a onclick="showPage('gallery')" id="nav-gallery">Gallery</a></li>
-    <li><a onclick="showPage('about')" id="nav-about">About</a></li>
-    <li><a onclick="showPage('booking')" class="nav-cta" id="nav-booking">Book a Detail</a></li>
+    <li><a href="#" data-page="home" id="nav-home">Home</a></li>
+    <li><a href="#" data-page="services" id="nav-services">Services</a></li>
+    <li><a href="#" data-page="gallery" id="nav-gallery">Gallery</a></li>
+    <li><a href="#" data-page="about" id="nav-about">About</a></li>
+    <li><a href="#" data-page="booking" class="nav-cta" id="nav-booking">Book a Detail</a></li>
   </ul>
-  <button class="theme-toggle" onclick="toggleTheme()" id="themeBtn" aria-label="Toggle light/dark mode" title="Toggle light/dark mode">🌙</button>
-  <button class="nav-toggle" onclick="toggleMobileNav(this)" aria-label="Toggle menu">&#9776;</button>
+  <button class="theme-toggle" id="themeBtn" aria-label="Toggle light/dark mode" title="Toggle light/dark mode">🌙</button>
+  <button class="nav-toggle" aria-label="Toggle menu">&#9776;</button>
 </nav>
 
 <!-- 2ND CHANCES BANNER -->
 <div class="brand-banner">
   <p>Proud part of</p>
   <span class="dot">|</span>
-  <a onclick="showPage('about')">2nd Chances INC.</a>
+  <a href="#" data-page="about">2nd Chances INC.</a>
   <span class="dot">|</span>
   <p>Family-run &mdash; Community-first</p>
 </div>
@@ -390,8 +390,8 @@
       <h1 class="hero-title">Every<br>Detail.<br><span class="red">Matters.</span></h1>
       <p class="hero-sub">We come to you. No drop-offs, no waiting rooms — we show up at your location and handle everything by hand, the right way.</p>
       <div class="hero-actions">
-        <button class="btn-primary" onclick="showPage('booking')">Schedule a Detail</button>
-        <button class="btn-ghost" onclick="showPage('services')">See Pricing &amp; Services</button>
+        <button class="btn-primary" data-page="booking">Schedule a Detail</button>
+        <button class="btn-ghost" data-page="services">See Pricing &amp; Services</button>
       </div>
     </div>
     <div class="hero-stats">
@@ -425,7 +425,7 @@
       <div class="ba-slot"><div class="slot-placeholder"><span class="ph-ico">&#128247;</span><span class="ph-txt">Before</span></div><div class="slot-label">Before</div></div>
       <div class="ba-slot"><div class="slot-placeholder"><span class="ph-ico">&#128247;</span><span class="ph-txt">After</span></div><div class="slot-label">After</div></div>
     </div>
-    <div style="margin-top:2rem;text-align:center;"><button class="btn-ghost" onclick="showPage('gallery')">View Full Gallery</button></div>
+    <div style="margin-top:2rem;text-align:center;"><button class="btn-ghost" data-page="gallery">View Full Gallery</button></div>
   </section>
   <div class="divider"></div>
   <!-- TESTIMONIALS -->
@@ -438,7 +438,7 @@
       <div class="testimonial-card"><div class="stars">★★★★★</div><p class="testimonial-text">The engine bay alone was worth every dollar. These two do the work, they don't rush it, and it shows. Genuinely the best my car has looked since I bought it.</p><div class="testimonial-author">James T.</div><div class="testimonial-rel">Friend of the family</div></div>
     </div>
   </section>
-  <div class="cta-strip"><div><h2>Ready to Book Your Detail?</h2><p>Mobile detailing — we come to you. Weekend slots only. No card required.</p></div><button class="btn-white" onclick="showPage('booking')">Schedule Now — $175</button></div>
+  <div class="cta-strip"><div><h2>Ready to Book Your Detail?</h2><p>Mobile detailing — we come to you. Weekend slots only. No card required.</p></div><button class="btn-white" data-page="booking">Schedule Now — $175</button></div>
   <div id="footer-home"></div>
 </div>
 
@@ -496,7 +496,7 @@
       <div class="faq-item"><div class="faq-q">What's included in the engine cleaning?</div><div class="faq-a">We degrease and clean the accessible engine bay — removing built-up grime and leaving it presentable. Included in the standard package.</div></div>
     </div>
   </section>
-  <div class="cta-strip"><div><h2>Ready to Book?</h2><p>Mobile detailing — we come to you. No card required.</p></div><button class="btn-white" onclick="showPage('booking')">Schedule Your Detail</button></div>
+  <div class="cta-strip"><div><h2>Ready to Book?</h2><p>Mobile detailing — we come to you. No card required.</p></div><button class="btn-white" data-page="booking">Schedule Your Detail</button></div>
   <div id="footer-services"></div>
 </div>
 
@@ -505,24 +505,24 @@
   <section style="padding-top:5rem;background:var(--near-black);">
     <div class="section-label">Our Work</div>
     <h1 class="section-title">Photo <span class="red">Gallery</span></h1>
-    <p class="section-body">Real cars, real results. Replace any placeholder with the actual image file to populate the gallery.</p>
+    <p class="section-body">Real cars, real results. Add photos to the <code>photos/</code> folder and update each slot's <code>src</code> path (e.g. <code>photos/car1-exterior-before.jpg</code>).</p>
     <div class="gallery-filter-bar reveal">
-      <button class="filter-btn active">All</button>
-      <button class="filter-btn">Exterior</button>
-      <button class="filter-btn">Interior</button>
-      <button class="filter-btn">Engine</button>
-      <button class="filter-btn">Before &amp; After</button>
+      <button class="filter-btn active" data-filter="all">All</button>
+      <button class="filter-btn" data-filter="exterior">Exterior</button>
+      <button class="filter-btn" data-filter="interior">Interior</button>
+      <button class="filter-btn" data-filter="engine">Engine</button>
+      <button class="filter-btn" data-filter="before-after">Before &amp; After</button>
     </div>
   </section>
   <section style="background:var(--black);padding-top:2rem;">
-    <div class="ba-section reveal">
+    <div class="ba-section reveal" data-category="before-after,exterior,interior">
       <div class="ba-section-label">Before &amp; After — Car 1</div>
       <div class="ba-grid cols-2">
         <div class="ba-pair"><div class="ba-slot"><div class="slot-placeholder"><span class="ph-ico">&#128247;</span><span class="ph-txt">Before — Exterior</span></div><div class="slot-label">Before<span class="slot-desc">Exterior</span></div></div><div class="ba-slot"><div class="slot-placeholder"><span class="ph-ico">&#10003;</span><span class="ph-txt">After — Exterior</span></div><div class="slot-label">After<span class="slot-desc">Exterior</span></div></div></div>
         <div class="ba-pair"><div class="ba-slot"><div class="slot-placeholder"><span class="ph-ico">&#128247;</span><span class="ph-txt">Before — Interior</span></div><div class="slot-label">Before<span class="slot-desc">Interior</span></div></div><div class="ba-slot"><div class="slot-placeholder"><span class="ph-ico">&#10003;</span><span class="ph-txt">After — Interior</span></div><div class="slot-label">After<span class="slot-desc">Interior</span></div></div></div>
       </div>
     </div>
-    <div class="ba-section reveal" style="margin-top:3rem;">
+    <div class="ba-section reveal" style="margin-top:3rem;" data-category="exterior,engine">
       <div class="ba-section-label">Exterior Work</div>
       <div class="single-grid">
         <div class="single-slot ba-slot"><div class="slot-placeholder"><span class="ph-ico">&#128247;</span></div><div class="slot-label">Wheel Detail</div></div>
@@ -533,14 +533,14 @@
         <div class="single-slot ba-slot"><div class="slot-placeholder"><span class="ph-ico">&#128247;</span></div><div class="slot-label">Full Exterior</div></div>
       </div>
     </div>
-    <div class="ba-section reveal" style="margin-top:3rem;">
+    <div class="ba-section reveal" style="margin-top:3rem;" data-category="before-after,exterior,interior">
       <div class="ba-section-label">Before &amp; After — Car 2</div>
       <div class="ba-grid cols-2">
         <div class="ba-pair"><div class="ba-slot"><div class="slot-placeholder"><span class="ph-ico">&#128247;</span><span class="ph-txt">Before</span></div><div class="slot-label">Before<span class="slot-desc">Exterior</span></div></div><div class="ba-slot"><div class="slot-placeholder"><span class="ph-ico">&#10003;</span><span class="ph-txt">After</span></div><div class="slot-label">After<span class="slot-desc">Exterior</span></div></div></div>
         <div class="ba-pair"><div class="ba-slot"><div class="slot-placeholder"><span class="ph-ico">&#128247;</span><span class="ph-txt">Before</span></div><div class="slot-label">Before<span class="slot-desc">Interior</span></div></div><div class="ba-slot"><div class="slot-placeholder"><span class="ph-ico">&#10003;</span><span class="ph-txt">After</span></div><div class="slot-label">After<span class="slot-desc">Interior</span></div></div></div>
       </div>
     </div>
-    <div class="ba-section reveal" style="margin-top:3rem;">
+    <div class="ba-section reveal" style="margin-top:3rem;" data-category="interior">
       <div class="ba-section-label">Interior Work</div>
       <div class="single-grid">
         <div class="single-slot ba-slot"><div class="slot-placeholder"><span class="ph-ico">&#128247;</span></div><div class="slot-label">Seats / Leather</div></div>
@@ -551,7 +551,7 @@
         <div class="single-slot ba-slot"><div class="slot-placeholder"><span class="ph-ico">&#128247;</span></div><div class="slot-label">Interior Glass</div></div>
       </div>
     </div>
-    <div class="ba-section reveal" style="margin-top:3rem;margin-bottom:1rem;">
+    <div class="ba-section reveal" style="margin-top:3rem;margin-bottom:1rem;" data-category="before-after">
       <div class="ba-section-label">Before &amp; After — Car 3</div>
       <div class="ba-grid cols-3">
         <div class="ba-pair"><div class="ba-slot"><div class="slot-placeholder"><span class="ph-ico">&#128247;</span></div><div class="slot-label">Before</div></div><div class="ba-slot"><div class="slot-placeholder"><span class="ph-ico">&#10003;</span></div><div class="slot-label">After</div></div></div>
@@ -560,7 +560,7 @@
       </div>
     </div>
   </section>
-  <div class="cta-strip"><div><h2>Want Your Car In Here?</h2><p>Book a detail and we'll make it happen.</p></div><button class="btn-white" onclick="showPage('booking')">Book Now</button></div>
+  <div class="cta-strip"><div><h2>Want Your Car In Here?</h2><p>Book a detail and we'll make it happen.</p></div><button class="btn-white" data-page="booking">Book Now</button></div>
   <div id="footer-gallery"></div>
 </div>
 
@@ -630,7 +630,7 @@
       </div>
     </div>
   </section>
-  <div class="cta-strip"><div><h2>Let's Get Your Car Right</h2><p>Same standard we've always held. Book anytime.</p></div><button class="btn-white" onclick="showPage('booking')">Book a Detail</button></div>
+  <div class="cta-strip"><div><h2>Let's Get Your Car Right</h2><p>Same standard we've always held. Book anytime.</p></div><button class="btn-white" data-page="booking">Book a Detail</button></div>
   <div id="footer-about"></div>
 </div>
 
@@ -686,25 +686,25 @@
           <div class="form-group"><label for="service">Service</label>
             <select id="service">
               <option value="">Select a service</option>
-              <option value="dropoff">Mobile Detail — $175</option>
+              <option value="mobile">Mobile Detail — $175</option>
             </select>
           </div>
           <span class="cal-label">Select a Date (Weekends Only)</span>
           <div class="calendar-wrap">
-            <div class="cal-header"><button class="cal-nav" onclick="changeMonth(-1)">&#8249;</button><span class="cal-month" id="calMonth"></span><button class="cal-nav" onclick="changeMonth(1)">&#8250;</button></div>
+            <div class="cal-header"><button type="button" class="cal-nav" data-cal-nav="-1">&#8249;</button><span class="cal-month" id="calMonth"></span><button type="button" class="cal-nav" data-cal-nav="1">&#8250;</button></div>
             <div class="cal-days-header"><div class="cal-day-name">Su</div><div class="cal-day-name">Mo</div><div class="cal-day-name">Tu</div><div class="cal-day-name">We</div><div class="cal-day-name">Th</div><div class="cal-day-name">Fr</div><div class="cal-day-name">Sa</div></div>
             <div class="cal-days" id="calDays"></div>
           </div>
           <span class="cal-label">Select a Start Time</span>
           <div class="time-slots" id="timeSlots">
-            <div class="time-slot" data-time="8:00 AM" onclick="selectTime(this)">8:00 AM</div>
-            <div class="time-slot" data-time="10:00 AM" onclick="selectTime(this)">10:00 AM</div>
-            <div class="time-slot" data-time="12:00 PM" onclick="selectTime(this)">12:00 PM</div>
+            <div class="time-slot" data-time="8:00 AM">8:00 AM</div>
+            <div class="time-slot" data-time="10:00 AM">10:00 AM</div>
+            <div class="time-slot" data-time="12:00 PM">12:00 PM</div>
           </div>
           <div class="form-group"><label for="notes">Notes (Optional)</label><textarea id="notes" placeholder="Specific stains, unusual vehicle size, access notes..."></textarea></div>
           <div id="formError" class="error-msg"></div>
           <div id="formLoading" class="form-loading">Submitting your booking...</div>
-          <button class="form-submit" id="submitBtn" onclick="submitBooking()">Request This Appointment</button>
+          <button type="button" class="form-submit" id="submitBtn">Request This Appointment</button>
         </div>
         <div class="success-msg" id="successMsg">
           <div style="font-size:2.5rem;margin-bottom:1rem;">&#10003;</div>
@@ -717,291 +717,7 @@
   <div id="footer-booking"></div>
 </div>
 
-<script>
-// ── API BASE URL ──
-// Update RAILWAY_API_ORIGIN after deploying to Railway (see RAILWAY_SETUP.md)
-const RAILWAY_API_ORIGIN = 'https://detailingsite-production.up.railway.app';
-const API_BASE = (location.hostname === 'localhost' || location.hostname === '127.0.0.1')
-  ? window.location.origin + '/api'
-  : RAILWAY_API_ORIGIN + '/api';
-
-/* ── FOOTER HTML ── */
-function makeFooter() {
-  return `<footer>
-    <div class="footer-main">
-      <div class="footer-brand">
-        <span class="footer-logo">2 The <span>Xtreme</span> Detailing</span>
-        <p>Mobile hand detailing done right. We come to you, no drop-offs needed. Family-run and proud of every car we touch.</p>
-        <span class="inc-tag">A 2nd Chances INC. Brand</span>
-        <div class="social-links" style="margin-top:1.25rem;">
-          <a href="https://facebook.com/2theXtremeDetailing" target="_blank" rel="noopener noreferrer" class="social-btn fb">
-            <svg><use href="#icon-fb"/></svg> Facebook
-          </a>
-          <a href="https://tiktok.com/@2theXtremeDetailing" target="_blank" rel="noopener noreferrer" class="social-btn tt">
-            <svg><use href="#icon-tt"/></svg> TikTok
-          </a>
-        </div>
-      </div>
-      <div class="footer-col"><h4>Pages</h4><ul>
-        <li><a onclick="showPage('home')">Home</a></li>
-        <li><a onclick="showPage('services')">Services</a></li>
-        <li><a onclick="showPage('gallery')">Gallery</a></li>
-        <li><a onclick="showPage('about')">About</a></li>
-        <li><a onclick="showPage('booking')">Book a Detail</a></li>
-      </ul></div>
-      <div class="footer-col"><h4>Pricing</h4><ul>
-        <li><a onclick="showPage('services')">Standard — $175</a></li>
-      </ul></div>
-      <div class="footer-col"><h4>Follow Us</h4><ul>
-        <li><a href="https://facebook.com/2theXtremeDetailing" target="_blank" rel="noopener noreferrer"><svg style="width:14px;height:14px;fill:currentColor;"><use href="#icon-fb"/></svg> Facebook</a></li>
-        <li><a href="https://tiktok.com/@2theXtremeDetailing" target="_blank" rel="noopener noreferrer"><svg style="width:14px;height:14px;fill:currentColor;"><use href="#icon-tt"/></svg> TikTok</a></li>
-      </ul></div>
-    </div>
-    <div class="footer-bottom">
-      <p>&copy; 2025 2 The Xtreme Detailing &mdash; A 2nd Chances INC. brand. All rights reserved.</p>
-      <div class="social-mini">
-        <a href="https://facebook.com/2theXtremeDetailing" target="_blank" rel="noopener noreferrer"><svg><use href="#icon-fb"/></svg> Facebook</a>
-        <a href="https://tiktok.com/@2theXtremeDetailing" target="_blank" rel="noopener noreferrer"><svg><use href="#icon-tt"/></svg> TikTok</a>
-      </div>
-    </div>
-  </footer>`;
-}
-
-['home','services','gallery','about','booking'].forEach(p => {
-  let el = document.getElementById('footer-' + p);
-  if (el) el.innerHTML = makeFooter();
-});
-
-/* ── PAGE ROUTING ── */
-function showPage(name) {
-  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
-  document.getElementById('page-' + name).classList.add('active');
-  document.querySelectorAll('.nav-links a').forEach(a => a.classList.remove('active'));
-  let navEl = document.getElementById('nav-' + name);
-  if (navEl) navEl.classList.add('active');
-  window.scrollTo({ top: 0, behavior: 'smooth' });
-  if (name === 'booking') renderCalendar();
-  initReveals();
-}
-
-/* ── MOBILE NAV ── */
-function toggleMobileNav(btn) {
-  let ex = document.getElementById('mobileNav');
-  if (ex) { ex.remove(); btn.innerHTML = '&#9776;'; return; }
-  btn.innerHTML = '&#10005;';
-  let nav = document.createElement('div');
-  nav.id = 'mobileNav';
-  nav.style.cssText = 'position:fixed;top:64px;left:0;right:0;background:' + (document.documentElement.classList.contains('light') ? 'rgba(240,237,232,0.98)' : 'rgba(10,10,10,0.97)') + ';overflow:hidden;background:backdrop-filter:blur(12px);border-bottom:1px solid rgba(255,255,255,0.08);z-index:199;padding:1.5rem;display:flex;flex-direction:column;gap:1rem;';
-  [['Home','home'],['Services','services'],['Gallery','gallery'],['About','about'],['Book a Detail','booking']].forEach(([label, page]) => {
-    let a = document.createElement('a');
-    a.textContent = label;
-    a.style.cssText = 'color:#b8b4ac;text-decoration:none;font-size:0.88rem;letter-spacing:0.1em;text-transform:uppercase;cursor:pointer;padding:0.4rem 0;';
-    a.onclick = () => { nav.remove(); btn.innerHTML = '&#9776;'; showPage(page); };
-    nav.appendChild(a);
-  });
-  document.body.appendChild(nav);
-}
-
-/* ── REVEAL ── */
-function initReveals() {
-  setTimeout(() => {
-    const reveals = document.querySelectorAll('.page.active .reveal');
-    const obs = new IntersectionObserver(entries => {
-      entries.forEach(e => { if (e.isIntersecting) { e.target.classList.add('visible'); obs.unobserve(e.target); } });
-    }, { threshold: 0.08 });
-    reveals.forEach(r => { r.classList.remove('visible'); obs.observe(r); });
-  }, 50);
-}
-initReveals();
-
-/* ── GALLERY FILTER ── */
-document.querySelectorAll('.filter-btn').forEach(btn => {
-  btn.addEventListener('click', () => { document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active')); btn.classList.add('active'); });
-});
-
-/* ── CALENDAR ── */
-let selectedDate = null, selectedTime = null;
-let currentYear = new Date().getFullYear(), currentMonth = new Date().getMonth();
-const unavailableSlots = {};
-
-function isWeekend(d) { return d.getDay() === 0 || d.getDay() === 6; }
-
-function renderCalendar() {
-  const today = new Date(); today.setHours(0,0,0,0);
-  const firstDay = new Date(currentYear, currentMonth, 1);
-  const lastDay  = new Date(currentYear, currentMonth + 1, 0);
-  const months = ['January','February','March','April','May','June','July','August','September','October','November','December'];
-  document.getElementById('calMonth').textContent = months[currentMonth] + ' ' + currentYear;
-  const grid = document.getElementById('calDays');
-  grid.innerHTML = '';
-  for (let i = 0; i < firstDay.getDay(); i++) { let el = document.createElement('div'); el.className = 'cal-day empty'; grid.appendChild(el); }
-  for (let d = 1; d <= lastDay.getDate(); d++) {
-    let date = new Date(currentYear, currentMonth, d);
-    let el = document.createElement('div'); el.className = 'cal-day'; el.textContent = d;
-    if (!isWeekend(date) || date < today) {
-      el.classList.add('disabled');
-    } else {
-      if (date.toDateString() === today.toDateString()) el.classList.add('today');
-      if (selectedDate && selectedDate.toDateString() === date.toDateString()) el.classList.add('selected');
-      el.onclick = () => selectDate(date);
-    }
-    grid.appendChild(el);
-  }
-}
-
-function selectDate(date) {
-  selectedDate = date; selectedTime = null;
-  document.querySelectorAll('.time-slot').forEach(s => s.classList.remove('selected'));
-  renderCalendar(); updateTimeSlots();
-}
-
-function updateTimeSlots() {
-  if (!selectedDate) return;
-  let key = selectedDate.getFullYear()+'-'+selectedDate.getMonth()+'-'+selectedDate.getDate();
-  let blocked = unavailableSlots[key] || [];
-  document.querySelectorAll('.time-slot').forEach(slot => {
-    slot.classList.remove('unavailable','selected');
-    if (blocked.includes(slot.dataset.time)) slot.classList.add('unavailable');
-  });
-}
-
-function selectTime(el) {
-  if (el.classList.contains('unavailable')) return;
-  document.querySelectorAll('.time-slot').forEach(s => s.classList.remove('selected'));
-  el.classList.add('selected'); selectedTime = el.dataset.time;
-}
-
-function changeMonth(dir) {
-  currentMonth += dir;
-  if (currentMonth > 11) { currentMonth = 0; currentYear++; }
-  if (currentMonth < 0)  { currentMonth = 11; currentYear--; }
-  renderCalendar();
-}
-
-renderCalendar();
-
-/* ── FORM VALIDATION ── */
-function clearFormError() {
-  const errorEl = document.getElementById('formError');
-  errorEl.classList.remove('show');
-  errorEl.textContent = '';
-}
-
-function showFormError(message) {
-  const errorEl = document.getElementById('formError');
-  errorEl.textContent = message;
-  errorEl.classList.add('show');
-}
-
-/* ── FORM SUBMIT ── */
-async function submitBooking() {
-  clearFormError();
-
-  let fname = document.getElementById('fname').value.trim();
-  let lname = document.getElementById('lname').value.trim();
-  let email = document.getElementById('email').value.trim();
-  let phone = document.getElementById('phone').value.trim();
-  let vehicle = document.getElementById('vehicle').value.trim();
-  let address = document.getElementById('address').value.trim();
-  let service = document.getElementById('service').value;
-  let notes = document.getElementById('notes').value.trim();
-
-  // Client-side validation
-  if (!fname || !lname || !email || !phone || !vehicle || !address || !service) {
-    showFormError('Please fill out all required fields.');
-    return;
-  }
-  if (!selectedDate) {
-    showFormError('Please select a date.');
-    return;
-  }
-  if (!selectedTime) {
-    showFormError('Please select a time slot.');
-    return;
-  }
-
-  const y = selectedDate.getFullYear();
-  const m = String(selectedDate.getMonth() + 1).padStart(2, '0');
-  const d = String(selectedDate.getDate()).padStart(2, '0');
-  const dateStr = `${y}-${m}-${d}`;
-
-  // Show loading state
-  const submitBtn = document.getElementById('submitBtn');
-  const loadingEl = document.getElementById('formLoading');
-  submitBtn.disabled = true;
-  loadingEl.style.display = 'block';
-
-  try {
-    const response = await fetch(`${API_BASE}/bookings`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json'
-      },
-      body: JSON.stringify({
-        firstName: fname,
-        lastName: lname,
-        email: email,
-        phone: phone,
-        vehicle: vehicle,
-        address: address,
-        service: service,
-        date: dateStr,
-        time: selectedTime,
-        notes: notes
-      })
-    });
-
-    const data = await response.json();
-
-    if (response.ok && data.success) {
-      // Success
-      document.getElementById('bookingFormWrap').style.display = 'none';
-      loadingEl.style.display = 'none';
-
-      let displayDate = selectedDate.toLocaleDateString('en-US', { weekday:'long', year:'numeric', month:'long', day:'numeric' });
-      let svcLabel = 'Mobile Detail ($175)';
-
-      document.getElementById('successDetail').innerHTML =
-        "We'll reach out within 24 hours to confirm your detail.<br><br>" +
-        '<strong style="color:var(--white);">Date:</strong> <span style="color:#cc2020;">' + displayDate + '</span><br>' +
-        '<strong style="color:var(--white);">Time:</strong> <span style="color:#cc2020;">' + selectedTime + '</span><br>' +
-        '<strong style="color:var(--white);">Service:</strong> ' + svcLabel;
-
-      document.getElementById('successMsg').style.display = 'block';
-    } else {
-      // Error from server
-      const errorMsg = data.errors ? data.errors.map(e => e.message).join(', ') : data.message;
-      showFormError(errorMsg || 'Failed to submit booking. Please try again.');
-      submitBtn.disabled = false;
-      loadingEl.style.display = 'none';
-    }
-  } catch (error) {
-    console.error('Form submission error:', error);
-    showFormError('Failed to submit booking. Please check your connection and try again.');
-    submitBtn.disabled = false;
-    loadingEl.style.display = 'none';
-  }
-}
-
-/* ── THEME TOGGLE ── */
-function toggleTheme() {
-  const isLight = document.documentElement.classList.toggle('light');
-  document.getElementById('themeBtn').textContent = isLight ? '☀️' : '🌙';
-  try { localStorage.setItem('2xtreme-theme', isLight ? 'light' : 'dark'); } catch(e) {}
-}
-
-// Apply saved theme on load
-(function() {
-  try {
-    if (localStorage.getItem('2xtreme-theme') === 'light') {
-      document.documentElement.classList.add('light');
-      document.addEventListener('DOMContentLoaded', () => {
-        const btn = document.getElementById('themeBtn');
-        if (btn) btn.textContent = '☀️';
-      });
-    }
-  } catch(e) {}
-})();
-</script>
+<script src="js/config.js"></script>
+<script src="js/app.js" defer></script>
 </body>
 </html>

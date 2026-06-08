@@ -13,6 +13,7 @@ const app = express();
 app.set('trust proxy', 1);
 const PORT = process.env.PORT || 3000;
 const NODE_ENV = process.env.NODE_ENV || 'development';
+const RAILWAY_API_ORIGIN = process.env.RAILWAY_API_ORIGIN || 'https://detailingsite-production.up.railway.app';
 
 // Initialize database and encryption
 const db = new Database(process.env.DATABASE_PATH || './data/bookings.db');
@@ -31,7 +32,7 @@ app.use(helmet({
       fontSrc: ["https://fonts.gstatic.com"],
       scriptSrc: ["'self'"],
       imgSrc: ["'self'", "data:", "blob:"],
-      connectSrc: ["'self'"],
+      connectSrc: ["'self'", RAILWAY_API_ORIGIN],
       frameSrc: ["'none'"],
       objectSrc: ["'none'"],
       upgradeInsecureRequests: NODE_ENV === 'production' ? [] : null
@@ -115,10 +116,59 @@ app.get('/api/health', (req, res) => {
 // Serve static files (the HTML, CSS, images)
 app.use(express.static(path.join(__dirname, 'public')));
 
+// API: Get booked slots for a calendar month
+app.get('/api/availability', async (req, res) => {
+  try {
+    const year = parseInt(req.query.year, 10);
+    const month = parseInt(req.query.month, 10);
+
+    if (!year || !month || month < 1 || month > 12) {
+      return res.status(400).json({
+        success: false,
+        message: 'Valid year and month (1-12) are required'
+      });
+    }
+
+    const monthPrefix = `${year}-${String(month).padStart(2, '0')}`;
+    const rows = await db.all(
+      `SELECT date, time FROM bookings WHERE date LIKE ? AND status != 'cancelled'`,
+      [`${monthPrefix}%`]
+    );
+
+    const booked = {};
+    for (const row of rows) {
+      if (!booked[row.date]) booked[row.date] = [];
+      if (!booked[row.date].includes(row.time)) {
+        booked[row.date].push(row.time);
+      }
+    }
+
+    res.json({ success: true, booked });
+  } catch (error) {
+    console.error('Availability error:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Failed to fetch availability'
+    });
+  }
+});
+
 // API: Create booking
 app.post('/api/bookings', bookingValidationRules(), validate, async (req, res) => {
   try {
     const { firstName, lastName, email, phone, vehicle, address, service, date, time, notes } = req.body;
+
+    const existing = await db.get(
+      `SELECT id FROM bookings WHERE date = ? AND time = ? AND status != 'cancelled'`,
+      [date, time]
+    );
+
+    if (existing) {
+      return res.status(409).json({
+        success: false,
+        message: 'This time slot is already booked. Please choose another.'
+      });
+    }
 
     // Create booking with encrypted sensitive data
     const bookingId = uuidv4();
