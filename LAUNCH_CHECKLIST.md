@@ -25,7 +25,8 @@ Complete this checklist before going live.
 - [ ] Run `npm start`
 - [ ] Open http://localhost:3000
 - [ ] Verify homepage loads
-- [ ] Verify all pages load (home, services, gallery, about, booking)
+- [ ] Verify all pages load (home, services, gallery, about, booking, privacy)
+- [ ] Run `npm test` — all tests pass
 - [ ] Test theme toggle (dark/light mode)
 - [ ] Test navigation links
 - [ ] Test booking form:
@@ -134,19 +135,29 @@ Complete this checklist before going live.
 
 ### Setup Email Notifications (Recommended)
 - [ ] Decide on email service (Gmail, SendGrid, etc.)
-- [ ] Update `server.js` to send email on new booking
-- [ ] Test email sends
-- [ ] Update booking response with confirmation link
+- [ ] Set `SMTP_HOST`, `SMTP_PORT`, `SMTP_USER`, `SMTP_PASS`, and `OWNER_EMAIL` on Railway
+- [ ] Submit a test booking and verify owner + customer emails arrive
+- [ ] Confirm status-change emails work when confirming via admin dashboard
 
-### Test Admin API Access
-- [ ] Make API call to view booking details:
+### Test Admin Dashboard
+- [ ] Visit `https://your-site.com/admin.html` (or Railway URL + `/admin.html`)
+- [ ] Sign in with `ADMIN_API_KEY`
+- [ ] Verify bookings list loads for current month
+- [ ] Confirm a booking, then cancel a test booking
+- [ ] Export a booking as JSON
+- [ ] Test API directly:
 ```bash
 curl -X GET \
-  https://your-site.com/api/bookings/{some-uuid}/details \
+  https://your-api.up.railway.app/api/admin/bookings/{some-uuid}/details \
   -H "X-API-Key: your_admin_api_key"
 ```
 - [ ] Should return decrypted customer info
 - [ ] Check audit log shows access recorded
+
+### Test Privacy & Consent
+- [ ] Visit `#privacy` on the site — privacy policy loads
+- [ ] Booking form requires privacy consent checkbox
+- [ ] Footer links to privacy policy
 
 ### Database Backup (Important!)
 - [ ] Railway: Enable database backups in settings

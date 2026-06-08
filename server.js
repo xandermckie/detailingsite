@@ -7,7 +7,9 @@ const { v4: uuidv4 } = require('uuid');
 
 const Database = require('./src/database');
 const Encryption = require('./src/encryption');
-const { bookingValidationRules, validate } = require('./src/validation');
+const { bookingValidationRules, statusUpdateRules, validate } = require('./src/validation');
+const { requireAdmin, isValidUUID } = require('./src/admin');
+const emailService = require('./src/email');
 
 const app = express();
 app.set('trust proxy', 1);
@@ -15,15 +17,37 @@ const PORT = process.env.PORT || 3000;
 const NODE_ENV = process.env.NODE_ENV || 'development';
 const RAILWAY_API_ORIGIN = process.env.RAILWAY_API_ORIGIN || 'https://detailingsite-production.up.railway.app';
 
-// Initialize database and encryption
 const db = new Database(process.env.DATABASE_PATH || './data/bookings.db');
 const encryption = new Encryption(process.env.ENCRYPTION_KEY);
+
+function decryptBooking(booking) {
+  const decrypted = {
+    id: booking.id,
+    first_name: encryption.decrypt(booking.first_name_encrypted),
+    last_name: encryption.decrypt(booking.last_name_encrypted),
+    email: encryption.decrypt(booking.email_encrypted),
+    phone: encryption.decrypt(booking.phone_encrypted),
+    vehicle: booking.vehicle,
+    address: encryption.decrypt(booking.address_encrypted),
+    service: booking.service,
+    date: booking.date,
+    time: booking.time,
+    notes: booking.notes || '',
+    status: booking.status,
+    consent_at: booking.consent_at,
+    created_at: booking.created_at,
+    updated_at: booking.updated_at
+  };
+  if (booking.dropoff_address_encrypted) {
+    decrypted.dropoff_address = encryption.decrypt(booking.dropoff_address_encrypted);
+  }
+  return decrypted;
+}
 
 // ──────────────────────────────────────────────────────────────
 // SECURITY MIDDLEWARE
 // ──────────────────────────────────────────────────────────────
 
-// Helmet helps secure Express apps by setting various HTTP headers
 app.use(helmet({
   contentSecurityPolicy: {
     directives: {
@@ -39,7 +63,7 @@ app.use(helmet({
     }
   },
   hsts: {
-    maxAge: 31536000, // 1 year
+    maxAge: 31536000,
     includeSubDomains: true,
     preload: true
   },
@@ -49,24 +73,19 @@ app.use(helmet({
   xssFilter: true
 }));
 
-// CORS configuration - allow only your frontend
 const corsOptions = {
   origin: process.env.SITE_URL || 'http://localhost:3000',
   credentials: true,
   optionsSuccessStatus: 200,
-  methods: ['GET', 'POST', 'OPTIONS'],
-  allowedHeaders: ['Content-Type', 'X-CSRF-Token']
+  methods: ['GET', 'POST', 'PATCH', 'DELETE', 'OPTIONS'],
+  allowedHeaders: ['Content-Type', 'X-CSRF-Token', 'X-API-Key']
 };
 
 app.use(cors(corsOptions));
-
-// Body parser with size limits to prevent DoS
 app.use(express.json({ limit: '1mb' }));
 app.use(express.urlencoded({ limit: '1mb', extended: true }));
 
-// Prevent parameter pollution
 app.use((req, res, next) => {
-  // Only allow arrays if explicitly expected
   for (const key in req.body) {
     if (Array.isArray(req.body[key]) && !['tags', 'items'].includes(key)) {
       return res.status(400).json({
@@ -78,12 +97,11 @@ app.use((req, res, next) => {
   next();
 });
 
-// Rate limiting (simple in-memory implementation)
 const requestCounts = new Map();
 app.use((req, res, next) => {
   const ip = req.ip;
   const now = Date.now();
-  const windowStart = now - 60000; // 1 minute window
+  const windowStart = now - 60000;
 
   if (!requestCounts.has(ip)) {
     requestCounts.set(ip, []);
@@ -91,7 +109,6 @@ app.use((req, res, next) => {
 
   const timestamps = requestCounts.get(ip).filter(ts => ts > windowStart);
 
-  // Max 30 requests per minute per IP
   if (timestamps.length >= 30) {
     return res.status(429).json({
       success: false,
@@ -108,15 +125,12 @@ app.use((req, res, next) => {
 // ROUTES
 // ──────────────────────────────────────────────────────────────
 
-// Health check
 app.get('/api/health', (req, res) => {
   res.json({ status: 'ok' });
 });
 
-// Serve static files (the HTML, CSS, images)
 app.use(express.static(path.join(__dirname, 'public')));
 
-// API: Get booked slots for a calendar month
 app.get('/api/availability', async (req, res) => {
   try {
     const year = parseInt(req.query.year, 10);
@@ -153,10 +167,12 @@ app.get('/api/availability', async (req, res) => {
   }
 });
 
-// API: Create booking
 app.post('/api/bookings', bookingValidationRules(), validate, async (req, res) => {
   try {
-    const { firstName, lastName, email, phone, vehicle, address, service, date, time, notes } = req.body;
+    const {
+      firstName, lastName, email, phone, vehicle, address,
+      service, date, time, notes, dropoffAddress
+    } = req.body;
 
     const existing = await db.get(
       `SELECT id FROM bookings WHERE date = ? AND time = ? AND status != 'cancelled'`,
@@ -170,34 +186,26 @@ app.post('/api/bookings', bookingValidationRules(), validate, async (req, res) =
       });
     }
 
-    // Create booking with encrypted sensitive data
     const bookingId = uuidv4();
+    const dropoffEncrypted = (service === 'pickup_dropoff' && dropoffAddress)
+      ? encryption.encrypt(dropoffAddress)
+      : null;
 
-    const query = `
+    await db.run(`
       INSERT INTO bookings (
-        id,
-        first_name_encrypted,
-        last_name_encrypted,
-        email_encrypted,
-        phone_encrypted,
-        vehicle,
-        address_encrypted,
-        service,
-        date,
-        time,
-        notes,
-        status
-      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-    `;
-
-    await db.run(query, [
+        id, first_name_encrypted, last_name_encrypted, email_encrypted,
+        phone_encrypted, vehicle, address_encrypted, dropoff_address_encrypted,
+        service, date, time, notes, status, consent_at
+      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, CURRENT_TIMESTAMP)
+    `, [
       bookingId,
       encryption.encrypt(firstName),
       encryption.encrypt(lastName),
       encryption.encrypt(email),
       encryption.encrypt(phone),
-      vehicle, // Vehicle is not encrypted (needed for scheduling display)
+      vehicle,
       encryption.encrypt(address),
+      dropoffEncrypted,
       service,
       date,
       time,
@@ -205,19 +213,28 @@ app.post('/api/bookings', bookingValidationRules(), validate, async (req, res) =
       'pending'
     ]);
 
-    // Log the action (without sensitive data)
     await db.run(
       `INSERT INTO audit_log (action, booking_id, admin_ip) VALUES (?, ?, ?)`,
       ['BOOKING_CREATED', bookingId, req.ip]
     );
 
+    emailService.sendBookingCreated({
+      bookingId,
+      vehicle,
+      date,
+      time,
+      service,
+      customerEmail: email,
+      customerName: firstName
+    }).catch((err) => console.error('Email error:', err.message));
+
     res.status(201).json({
       success: true,
       message: 'Booking received. We\'ll confirm within 24 hours.',
-      bookingId: bookingId,
-      date: date,
-      time: time,
-      vehicle: vehicle
+      bookingId,
+      date,
+      time,
+      vehicle
     });
 
   } catch (error) {
@@ -229,13 +246,11 @@ app.post('/api/bookings', bookingValidationRules(), validate, async (req, res) =
   }
 });
 
-// API: Get booking summary (minimal data, for admin use only - no auth yet)
 app.get('/api/bookings/:bookingId', async (req, res) => {
   try {
     const { bookingId } = req.params;
 
-    // Basic validation of UUID format
-    if (!bookingId.match(/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i)) {
+    if (!isValidUUID(bookingId)) {
       return res.status(400).json({
         success: false,
         message: 'Invalid booking ID'
@@ -243,7 +258,7 @@ app.get('/api/bookings/:bookingId', async (req, res) => {
     }
 
     const booking = await db.get(
-      `SELECT id, vehicle, date, time, status, created_at FROM bookings WHERE id = ?`,
+      `SELECT id, vehicle, date, time, status, service, created_at FROM bookings WHERE id = ?`,
       [bookingId]
     );
 
@@ -254,10 +269,7 @@ app.get('/api/bookings/:bookingId', async (req, res) => {
       });
     }
 
-    res.json({
-      success: true,
-      data: booking
-    });
+    res.json({ success: true, data: booking });
 
   } catch (error) {
     console.error('Fetch booking error:', error);
@@ -268,32 +280,18 @@ app.get('/api/bookings/:bookingId', async (req, res) => {
   }
 });
 
-// API: Get booking details (admin only - TODO: add proper auth)
-app.get('/api/bookings/:bookingId/details', async (req, res) => {
+async function handleBookingDetails(req, res) {
   try {
-    // TODO: Add proper authentication/authorization here
-    // For now, only allow if correct API key is provided
-    const apiKey = req.headers['x-api-key'];
-    if (!apiKey || apiKey !== process.env.ADMIN_API_KEY) {
-      return res.status(401).json({
-        success: false,
-        message: 'Unauthorized'
-      });
-    }
-
     const { bookingId } = req.params;
 
-    if (!bookingId.match(/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i)) {
+    if (!isValidUUID(bookingId)) {
       return res.status(400).json({
         success: false,
         message: 'Invalid booking ID'
       });
     }
 
-    const booking = await db.get(
-      `SELECT * FROM bookings WHERE id = ?`,
-      [bookingId]
-    );
+    const booking = await db.get(`SELECT * FROM bookings WHERE id = ?`, [bookingId]);
 
     if (!booking) {
       return res.status(404).json({
@@ -302,26 +300,12 @@ app.get('/api/bookings/:bookingId/details', async (req, res) => {
       });
     }
 
-    // Decrypt sensitive fields
-    const decrypted = {
-      ...booking,
-      first_name: encryption.decrypt(booking.first_name_encrypted),
-      last_name: encryption.decrypt(booking.last_name_encrypted),
-      email: encryption.decrypt(booking.email_encrypted),
-      phone: encryption.decrypt(booking.phone_encrypted),
-      address: encryption.decrypt(booking.address_encrypted)
-    };
-
-    // Log access
     await db.run(
       `INSERT INTO audit_log (action, booking_id, admin_ip) VALUES (?, ?, ?)`,
       ['BOOKING_DETAILS_VIEWED', bookingId, req.ip]
     );
 
-    res.json({
-      success: true,
-      data: decrypted
-    });
+    res.json({ success: true, data: decryptBooking(booking) });
 
   } catch (error) {
     console.error('Fetch booking details error:', error);
@@ -330,9 +314,176 @@ app.get('/api/bookings/:bookingId/details', async (req, res) => {
       message: 'Failed to fetch booking details'
     });
   }
+}
+
+app.get('/api/bookings/:bookingId/details', requireAdmin, handleBookingDetails);
+app.get('/api/admin/bookings/:bookingId/details', requireAdmin, handleBookingDetails);
+
+app.get('/api/admin/bookings', requireAdmin, async (req, res) => {
+  try {
+    const year = parseInt(req.query.year, 10);
+    const month = parseInt(req.query.month, 10);
+    const status = req.query.status;
+
+    if (!year || !month || month < 1 || month > 12) {
+      return res.status(400).json({
+        success: false,
+        message: 'Valid year and month (1-12) are required'
+      });
+    }
+
+    const monthPrefix = `${year}-${String(month).padStart(2, '0')}`;
+    let sql = `SELECT id, vehicle, date, time, status, service, created_at
+               FROM bookings WHERE date LIKE ?`;
+    const params = [`${monthPrefix}%`];
+
+    if (status && status !== 'all') {
+      sql += ' AND status = ?';
+      params.push(status);
+    }
+
+    sql += ' ORDER BY date ASC, time ASC';
+
+    const bookings = await db.all(sql, params);
+    res.json({ success: true, data: bookings });
+
+  } catch (error) {
+    console.error('List bookings error:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Failed to list bookings'
+    });
+  }
 });
 
-// 404 handler
+app.patch('/api/admin/bookings/:bookingId', requireAdmin, statusUpdateRules(), validate, async (req, res) => {
+  try {
+    const { bookingId } = req.params;
+    const { status } = req.body;
+
+    if (!isValidUUID(bookingId)) {
+      return res.status(400).json({
+        success: false,
+        message: 'Invalid booking ID'
+      });
+    }
+
+    const booking = await db.get(`SELECT * FROM bookings WHERE id = ?`, [bookingId]);
+
+    if (!booking) {
+      return res.status(404).json({
+        success: false,
+        message: 'Booking not found'
+      });
+    }
+
+    await db.run(
+      `UPDATE bookings SET status = ?, updated_at = CURRENT_TIMESTAMP WHERE id = ?`,
+      [status, bookingId]
+    );
+
+    await db.run(
+      `INSERT INTO audit_log (action, booking_id, admin_ip) VALUES (?, ?, ?)`,
+      ['BOOKING_STATUS_UPDATED', bookingId, req.ip]
+    );
+
+    const decrypted = decryptBooking(booking);
+    emailService.sendStatusChange({
+      customerEmail: decrypted.email,
+      customerName: decrypted.first_name,
+      status,
+      vehicle: booking.vehicle,
+      date: booking.date,
+      time: booking.time
+    }).catch((err) => console.error('Status email error:', err.message));
+
+    res.json({
+      success: true,
+      message: `Booking status updated to ${status}`,
+      data: { id: bookingId, status }
+    });
+
+  } catch (error) {
+    console.error('Update booking error:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Failed to update booking'
+    });
+  }
+});
+
+app.delete('/api/admin/bookings/:bookingId', requireAdmin, async (req, res) => {
+  try {
+    const { bookingId } = req.params;
+
+    if (!isValidUUID(bookingId)) {
+      return res.status(400).json({
+        success: false,
+        message: 'Invalid booking ID'
+      });
+    }
+
+    const result = await db.run(`DELETE FROM bookings WHERE id = ?`, [bookingId]);
+
+    if (result.changes === 0) {
+      return res.status(404).json({
+        success: false,
+        message: 'Booking not found'
+      });
+    }
+
+    await db.run(
+      `INSERT INTO audit_log (action, booking_id, admin_ip) VALUES (?, ?, ?)`,
+      ['BOOKING_DELETED', bookingId, req.ip]
+    );
+
+    res.json({ success: true, message: 'Booking deleted' });
+
+  } catch (error) {
+    console.error('Delete booking error:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Failed to delete booking'
+    });
+  }
+});
+
+app.get('/api/admin/bookings/:bookingId/export', requireAdmin, async (req, res) => {
+  try {
+    const { bookingId } = req.params;
+
+    if (!isValidUUID(bookingId)) {
+      return res.status(400).json({
+        success: false,
+        message: 'Invalid booking ID'
+      });
+    }
+
+    const booking = await db.get(`SELECT * FROM bookings WHERE id = ?`, [bookingId]);
+
+    if (!booking) {
+      return res.status(404).json({
+        success: false,
+        message: 'Booking not found'
+      });
+    }
+
+    await db.run(
+      `INSERT INTO audit_log (action, booking_id, admin_ip) VALUES (?, ?, ?)`,
+      ['BOOKING_EXPORTED', bookingId, req.ip]
+    );
+
+    res.json({ success: true, data: decryptBooking(booking) });
+
+  } catch (error) {
+    console.error('Export booking error:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Failed to export booking'
+    });
+  }
+});
+
 app.use((req, res) => {
   res.status(404).json({
     success: false,
@@ -340,7 +491,6 @@ app.use((req, res) => {
   });
 });
 
-// Error handler
 app.use((err, req, res, next) => {
   console.error('Unhandled error:', err);
   res.status(500).json({
@@ -357,19 +507,19 @@ app.use((err, req, res, next) => {
 
 const startServer = async () => {
   try {
-    // Validate required environment variables
     if (!process.env.ENCRYPTION_KEY) {
       throw new Error('ENCRYPTION_KEY environment variable is required. Generate one with: node -e "console.log(require(\'crypto\').randomBytes(32).toString(\'hex\'))"');
     }
 
-    // Initialize database
     await db.init();
     console.log('✓ Database initialized');
 
-    // Start server
     app.listen(PORT, () => {
       console.log(`✓ Server running on port ${PORT}`);
       console.log(`✓ Environment: ${NODE_ENV}`);
+      if (!emailService.isConfigured()) {
+        console.warn('⚠ Email not configured — set SMTP_* env vars to enable notifications');
+      }
     });
 
   } catch (error) {
@@ -378,7 +528,6 @@ const startServer = async () => {
   }
 };
 
-// Graceful shutdown
 process.on('SIGTERM', async () => {
   console.log('SIGTERM received, shutting down gracefully...');
   await db.close();
@@ -391,6 +540,8 @@ process.on('SIGINT', async () => {
   process.exit(0);
 });
 
-startServer();
+if (require.main === module) {
+  startServer();
+}
 
-module.exports = app;
+module.exports = { app, db, encryption, startServer };

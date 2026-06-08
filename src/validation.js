@@ -1,6 +1,8 @@
 const { body, validationResult } = require('express-validator');
 
-// Validation rules for booking form
+const VALID_SERVICES = ['mobile', 'pickup_dropoff'];
+const VALID_STATUSES = ['pending', 'confirmed', 'cancelled', 'completed'];
+
 const bookingValidationRules = () => {
   return [
     body('firstName')
@@ -42,19 +44,47 @@ const bookingValidationRules = () => {
 
     body('service')
       .notEmpty().withMessage('Service is required')
-      .isIn(['mobile']).withMessage('Invalid service selected'),
+      .isIn(VALID_SERVICES).withMessage('Invalid service selected'),
+
+    body('dropoffAddress')
+      .custom((value, { req }) => {
+        const trimmed = (value || '').trim();
+        if (req.body.service === 'pickup_dropoff') {
+          if (!trimmed || trimmed.length < 5) {
+            throw new Error('Drop-off address is required for pickup & drop-off service');
+          }
+          if (trimmed.length > 500) {
+            throw new Error('Drop-off address must be 5-500 characters');
+          }
+          if (!/^[a-zA-Z0-9\s,.#-]+$/.test(trimmed)) {
+            throw new Error('Drop-off address contains invalid characters');
+          }
+        } else if (trimmed) {
+          if (trimmed.length < 5 || trimmed.length > 500) {
+            throw new Error('Drop-off address must be 5-500 characters');
+          }
+        }
+        return true;
+      }),
+
+    body('privacyConsent')
+      .custom((value) => {
+        if (value !== true && value !== 'true') {
+          throw new Error('You must agree to the privacy policy');
+        }
+        return true;
+      }),
 
     body('date')
       .notEmpty().withMessage('Date is required')
       .isISO8601().withMessage('Invalid date format')
       .custom((value) => {
-        const date = new Date(value);
+        const date = new Date(value + 'T12:00:00');
         const today = new Date();
         today.setHours(0, 0, 0, 0);
         if (date < today) {
           throw new Error('Cannot book dates in the past');
         }
-        // Only weekends allowed
         const dayOfWeek = date.getDay();
         if (dayOfWeek !== 0 && dayOfWeek !== 6) {
           throw new Error('Only weekend dates (Saturday/Sunday) are available');
@@ -74,7 +104,14 @@ const bookingValidationRules = () => {
   ];
 };
 
-// Middleware to check validation results
+const statusUpdateRules = () => {
+  return [
+    body('status')
+      .notEmpty().withMessage('Status is required')
+      .isIn(VALID_STATUSES.filter((s) => s !== 'pending')).withMessage('Invalid status')
+  ];
+};
+
 const validate = (req, res, next) => {
   const errors = validationResult(req);
   if (!errors.isEmpty()) {
@@ -82,7 +119,7 @@ const validate = (req, res, next) => {
       success: false,
       message: 'Validation failed',
       errors: errors.array().map(err => ({
-        field: err.param,
+        field: err.path || err.param,
         message: err.msg
       }))
     });
@@ -92,5 +129,8 @@ const validate = (req, res, next) => {
 
 module.exports = {
   bookingValidationRules,
-  validate
+  statusUpdateRules,
+  validate,
+  VALID_SERVICES,
+  VALID_STATUSES
 };

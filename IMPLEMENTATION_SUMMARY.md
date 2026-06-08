@@ -284,23 +284,18 @@ Get full booking with decrypted customer info. **Admin only.**
 
 ## What Still Needs Work
 
+### Completed in latest build
+- Email notifications (Nodemailer — configure `SMTP_*` env vars)
+- Admin dashboard at `/admin.html`
+- GDPR privacy page, consent checkbox, admin deletion/export
+- Second service tier (`pickup_dropoff` at $200)
+- API tests (`npm test`)
+
 ### For Production
-1. **Email Notifications**
-   - Nodemailer setup
-   - Send confirmation to customer
-   - Notify you of new bookings
+1. **Configure SMTP** on Railway for live email delivery
+2. **Add gallery photos** to `public/photos/`
 
-2. **Admin Dashboard**
-   - View all bookings
-   - Confirm/cancel bookings
-   - Send confirmation emails
-
-3. **GDPR/Privacy**
-   - Privacy policy page
-   - Consent checkbox on form
-   - Data deletion mechanism
-
-4. **Database Upgrade** (when you get lots of bookings)
+3. **Database Upgrade** (when you get lots of bookings)
    - Switch from SQLite to PostgreSQL
    - Add Redis for caching
    - Implement worker process for emails

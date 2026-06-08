@@ -6,13 +6,19 @@ const API_BASE = (location.hostname === 'localhost' || location.hostname === '12
   : RAILWAY_API_ORIGIN + '/api';
 
 const ALL_TIME_SLOTS = ['8:00 AM', '10:00 AM', '12:00 PM'];
-const PAGE_IDS = ['home', 'services', 'gallery', 'about', 'booking'];
+const PAGE_IDS = ['home', 'services', 'gallery', 'about', 'booking', 'privacy'];
+
+const SERVICE_LABELS = {
+  mobile: 'Mobile Detail ($175)',
+  pickup_dropoff: 'Pickup & Drop-off ($200)'
+};
 
 let selectedDate = null;
 let selectedTime = null;
 let currentYear = new Date().getFullYear();
 let currentMonth = new Date().getMonth();
 let unavailableSlots = {};
+let calendarLoading = false;
 
 function dateKey(date) {
   const y = date.getFullYear();
@@ -28,6 +34,7 @@ function makeFooter() {
         <span class="footer-logo">2 The <span>Xtreme</span> Detailing</span>
         <p>Mobile hand detailing done right. We come to you, no drop-offs needed. Family-run and proud of every car we touch.</p>
         <span class="inc-tag">A 2nd Chances INC. Brand</span>
+        <p style="font-size:0.8rem;color:var(--white-muted);margin-top:0.75rem;"><a href="mailto:xandermckie@gmail.com" style="color:var(--red);text-decoration:none;">xandermckie@gmail.com</a></p>
         <div class="social-links" style="margin-top:1.25rem;">
           <a href="https://facebook.com/2theXtremeDetailing" target="_blank" rel="noopener noreferrer" class="social-btn fb">
             <svg><use href="#icon-fb"/></svg> Facebook
@@ -38,14 +45,16 @@ function makeFooter() {
         </div>
       </div>
       <div class="footer-col"><h4>Pages</h4><ul>
-        <li><a href="#" data-page="home">Home</a></li>
-        <li><a href="#" data-page="services">Services</a></li>
-        <li><a href="#" data-page="gallery">Gallery</a></li>
-        <li><a href="#" data-page="about">About</a></li>
-        <li><a href="#" data-page="booking">Book a Detail</a></li>
+        <li><a href="#home" data-page="home">Home</a></li>
+        <li><a href="#services" data-page="services">Services</a></li>
+        <li><a href="#gallery" data-page="gallery">Gallery</a></li>
+        <li><a href="#about" data-page="about">About</a></li>
+        <li><a href="#booking" data-page="booking">Book a Detail</a></li>
+        <li><a href="#privacy" data-page="privacy">Privacy Policy</a></li>
       </ul></div>
       <div class="footer-col"><h4>Pricing</h4><ul>
-        <li><a href="#" data-page="services">Standard — $175</a></li>
+        <li><a href="#services" data-page="services">Mobile — $175</a></li>
+        <li><a href="#services" data-page="services">Pickup &amp; Drop-off — $200</a></li>
       </ul></div>
       <div class="footer-col"><h4>Follow Us</h4><ul>
         <li><a href="https://facebook.com/2theXtremeDetailing" target="_blank" rel="noopener noreferrer"><svg style="width:14px;height:14px;fill:currentColor;"><use href="#icon-fb"/></svg> Facebook</a></li>
@@ -53,7 +62,7 @@ function makeFooter() {
       </ul></div>
     </div>
     <div class="footer-bottom">
-      <p>&copy; 2025 2 The Xtreme Detailing &mdash; A 2nd Chances INC. brand. All rights reserved.</p>
+      <p>&copy; 2025 2 The Xtreme Detailing &mdash; A 2nd Chances INC. brand. All rights reserved. &middot; <a href="#privacy" data-page="privacy" style="color:var(--white-muted);text-decoration:none;">Privacy</a></p>
       <div class="social-mini">
         <a href="https://facebook.com/2theXtremeDetailing" target="_blank" rel="noopener noreferrer"><svg><use href="#icon-fb"/></svg> Facebook</a>
         <a href="https://tiktok.com/@2theXtremeDetailing" target="_blank" rel="noopener noreferrer"><svg><use href="#icon-tt"/></svg> TikTok</a>
@@ -69,19 +78,33 @@ function injectFooters() {
   });
 }
 
-function showPage(name) {
+function showPage(name, pushHash = true) {
+  if (!PAGE_IDS.includes(name)) name = 'home';
+
   document.querySelectorAll('.page').forEach((p) => p.classList.remove('active'));
   const page = document.getElementById('page-' + name);
   if (!page) return;
   page.classList.add('active');
+
   document.querySelectorAll('.nav-links a').forEach((a) => a.classList.remove('active'));
   const navEl = document.getElementById('nav-' + name);
   if (navEl) navEl.classList.add('active');
+
+  if (pushHash && location.hash !== '#' + name) {
+    history.pushState(null, '', '#' + name);
+  }
+
   window.scrollTo({ top: 0, behavior: 'smooth' });
+
   if (name === 'booking') {
     fetchAvailability().then(() => renderCalendar());
   }
   initReveals();
+}
+
+function handleHashRoute() {
+  const hash = location.hash.replace('#', '') || 'home';
+  showPage(hash, false);
 }
 
 function toggleMobileNav(btn) {
@@ -94,15 +117,12 @@ function toggleMobileNav(btn) {
   btn.innerHTML = '&#10005;';
   const nav = document.createElement('div');
   nav.id = 'mobileNav';
-  const bg = document.documentElement.classList.contains('light')
-    ? 'rgba(240,237,232,0.98)'
-    : 'rgba(10,10,10,0.97)';
-  nav.style.cssText = `position:fixed;top:64px;left:0;right:0;background:${bg};backdrop-filter:blur(12px);border-bottom:1px solid rgba(255,255,255,0.08);z-index:199;padding:1.5rem;display:flex;flex-direction:column;gap:1rem;`;
-  [['Home', 'home'], ['Services', 'services'], ['Gallery', 'gallery'], ['About', 'about'], ['Book a Detail', 'booking']].forEach(([label, page]) => {
+  nav.style.cssText = 'position:fixed;top:64px;left:0;right:0;background:var(--nav-bg);backdrop-filter:blur(12px);border-bottom:1px solid var(--border);z-index:199;padding:1.5rem;display:flex;flex-direction:column;gap:1rem;';
+  [['Home', 'home'], ['Services', 'services'], ['Gallery', 'gallery'], ['About', 'about'], ['Book a Detail', 'booking'], ['Privacy', 'privacy']].forEach(([label, page]) => {
     const a = document.createElement('a');
-    a.href = '#';
+    a.href = '#' + page;
     a.textContent = label;
-    a.style.cssText = 'color:#b8b4ac;text-decoration:none;font-size:0.88rem;letter-spacing:0.1em;text-transform:uppercase;cursor:pointer;padding:0.4rem 0;';
+    a.style.cssText = 'color:var(--white-dim);text-decoration:none;font-size:0.88rem;letter-spacing:0.1em;text-transform:uppercase;cursor:pointer;padding:0.4rem 0;';
     a.addEventListener('click', (e) => {
       e.preventDefault();
       nav.remove();
@@ -150,7 +170,16 @@ function applyGalleryFilter(filter) {
   });
 }
 
+function setCalendarLoading(loading) {
+  calendarLoading = loading;
+  const loadingEl = document.getElementById('calLoading');
+  const grid = document.getElementById('calDays');
+  if (loadingEl) loadingEl.style.display = loading ? 'block' : 'none';
+  if (grid) grid.classList.toggle('cal-hidden', loading);
+}
+
 async function fetchAvailability() {
+  setCalendarLoading(true);
   try {
     const res = await fetch(`${API_BASE}/availability?year=${currentYear}&month=${currentMonth + 1}`);
     const data = await res.json();
@@ -159,6 +188,8 @@ async function fetchAvailability() {
     }
   } catch (err) {
     console.error('Availability fetch failed:', err);
+  } finally {
+    setCalendarLoading(false);
   }
 }
 
@@ -242,6 +273,26 @@ async function changeMonth(dir) {
   updateTimeSlots();
 }
 
+function clearFieldErrors() {
+  document.querySelectorAll('.form-group input, .form-group select, .form-group textarea').forEach((el) => {
+    el.classList.remove('error');
+  });
+  document.querySelectorAll('.field-error').forEach((el) => {
+    el.classList.remove('show');
+    el.textContent = '';
+  });
+}
+
+function setFieldError(fieldId, message) {
+  const field = document.getElementById(fieldId);
+  const errorEl = document.getElementById(fieldId + 'Error');
+  if (field) field.classList.add('error');
+  if (errorEl) {
+    errorEl.textContent = message;
+    errorEl.classList.add('show');
+  }
+}
+
 function clearFormError() {
   const errorEl = document.getElementById('formError');
   if (!errorEl) return;
@@ -256,7 +307,8 @@ function showFormError(message) {
   errorEl.classList.add('show');
 }
 
-async function submitBooking() {
+function validateBookingForm() {
+  clearFieldErrors();
   clearFormError();
 
   const fname = document.getElementById('fname').value.trim();
@@ -266,20 +318,96 @@ async function submitBooking() {
   const vehicle = document.getElementById('vehicle').value.trim();
   const address = document.getElementById('address').value.trim();
   const service = document.getElementById('service').value;
-  const notes = document.getElementById('notes').value.trim();
+  const dropoffAddress = document.getElementById('dropoffAddress').value.trim();
+  const consent = document.getElementById('privacyConsent').checked;
 
-  if (!fname || !lname || !email || !phone || !vehicle || !address || !service) {
-    showFormError('Please fill out all required fields.');
-    return;
+  let valid = true;
+
+  if (!fname) { setFieldError('fname', 'First name is required'); valid = false; }
+  else if (!/^[a-zA-Z\s'-]+$/.test(fname)) { setFieldError('fname', 'Invalid characters in first name'); valid = false; }
+
+  if (!lname) { setFieldError('lname', 'Last name is required'); valid = false; }
+  else if (!/^[a-zA-Z\s'-]+$/.test(lname)) { setFieldError('lname', 'Invalid characters in last name'); valid = false; }
+
+  if (!email) { setFieldError('email', 'Email is required'); valid = false; }
+  else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) { setFieldError('email', 'Invalid email address'); valid = false; }
+
+  if (!phone) { setFieldError('phone', 'Phone is required'); valid = false; }
+  else if (!/^[\d\s\-()\.+]+$/.test(phone) || phone.length < 10) { setFieldError('phone', 'Invalid phone number'); valid = false; }
+
+  if (!vehicle) { setFieldError('vehicle', 'Vehicle info is required'); valid = false; }
+  else if (vehicle.length < 3) { setFieldError('vehicle', 'Vehicle must be at least 3 characters'); valid = false; }
+
+  if (!address) { setFieldError('address', 'Address is required'); valid = false; }
+  else if (address.length < 5) { setFieldError('address', 'Address must be at least 5 characters'); valid = false; }
+
+  if (!service) { setFieldError('service', 'Please select a service'); valid = false; }
+
+  if (service === 'pickup_dropoff' && !dropoffAddress) {
+    setFieldError('dropoffAddress', 'Drop-off address is required');
+    valid = false;
+  } else if (dropoffAddress && dropoffAddress.length < 5) {
+    setFieldError('dropoffAddress', 'Drop-off address must be at least 5 characters');
+    valid = false;
   }
+
+  if (!consent) {
+    showFormError('You must agree to the privacy policy.');
+    valid = false;
+  }
+
   if (!selectedDate) {
     showFormError('Please select a date.');
-    return;
+    valid = false;
+  } else if (!isWeekend(selectedDate)) {
+    showFormError('Only weekend dates are available.');
+    valid = false;
   }
+
   if (!selectedTime) {
     showFormError('Please select a time slot.');
-    return;
+    valid = false;
   }
+
+  if (!valid) return null;
+
+  return { fname, lname, email, phone, vehicle, address, service, dropoffAddress, consent };
+}
+
+function toggleDropoffField() {
+  const service = document.getElementById('service').value;
+  const group = document.getElementById('dropoffGroup');
+  if (group) group.classList.toggle('visible', service === 'pickup_dropoff');
+}
+
+function resetBookingForm() {
+  ['fname', 'lname', 'email', 'phone', 'vehicle', 'address', 'dropoffAddress', 'notes'].forEach((id) => {
+    const el = document.getElementById(id);
+    if (el) el.value = '';
+  });
+  const serviceEl = document.getElementById('service');
+  if (serviceEl) serviceEl.value = '';
+  const consentEl = document.getElementById('privacyConsent');
+  if (consentEl) consentEl.checked = false;
+
+  selectedDate = null;
+  selectedTime = null;
+  clearFieldErrors();
+  clearFormError();
+  toggleDropoffField();
+
+  document.getElementById('bookingFormWrap').style.display = '';
+  document.getElementById('successMsg').style.display = 'none';
+  document.getElementById('formLoading').style.display = 'none';
+  const submitBtn = document.getElementById('submitBtn');
+  if (submitBtn) submitBtn.disabled = false;
+
+  fetchAvailability().then(() => renderCalendar());
+}
+
+async function submitBooking() {
+  const data = validateBookingForm();
+  if (!data) return;
 
   const dateStr = dateKey(selectedDate);
   const submitBtn = document.getElementById('submitBtn');
@@ -287,27 +415,34 @@ async function submitBooking() {
   submitBtn.disabled = true;
   loadingEl.style.display = 'block';
 
+  const payload = {
+    firstName: data.fname,
+    lastName: data.lname,
+    email: data.email,
+    phone: data.phone,
+    vehicle: data.vehicle,
+    address: data.address,
+    service: data.service,
+    date: dateStr,
+    time: selectedTime,
+    notes: document.getElementById('notes').value.trim(),
+    privacyConsent: true
+  };
+
+  if (data.service === 'pickup_dropoff') {
+    payload.dropoffAddress = data.dropoffAddress;
+  }
+
   try {
     const response = await fetch(`${API_BASE}/bookings`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        firstName: fname,
-        lastName: lname,
-        email,
-        phone,
-        vehicle,
-        address,
-        service,
-        date: dateStr,
-        time: selectedTime,
-        notes
-      })
+      body: JSON.stringify(payload)
     });
 
-    const data = await response.json();
+    const result = await response.json();
 
-    if (response.ok && data.success) {
+    if (response.ok && result.success) {
       document.getElementById('bookingFormWrap').style.display = 'none';
       loadingEl.style.display = 'none';
 
@@ -315,11 +450,13 @@ async function submitBooking() {
         weekday: 'long', year: 'numeric', month: 'long', day: 'numeric'
       });
 
+      const serviceLabel = SERVICE_LABELS[data.service] || data.service;
+
       document.getElementById('successDetail').innerHTML =
         "We'll reach out within 24 hours to confirm your detail.<br><br>" +
         '<strong style="color:var(--white);">Date:</strong> <span style="color:#cc2020;">' + displayDate + '</span><br>' +
         '<strong style="color:var(--white);">Time:</strong> <span style="color:#cc2020;">' + selectedTime + '</span><br>' +
-        '<strong style="color:var(--white);">Service:</strong> Mobile Detail ($175)';
+        '<strong style="color:var(--white);">Service:</strong> ' + serviceLabel;
 
       document.getElementById('successMsg').style.display = 'block';
 
@@ -328,10 +465,20 @@ async function submitBooking() {
         unavailableSlots[dateStr].push(selectedTime);
       }
     } else {
-      const errorMsg = data.errors
-        ? data.errors.map((e) => e.message).join(', ')
-        : data.message;
-      showFormError(errorMsg || 'Failed to submit booking. Please try again.');
+      if (result.errors) {
+        result.errors.forEach((err) => {
+          const fieldMap = {
+            firstName: 'fname', lastName: 'lname', dropoffAddress: 'dropoffAddress'
+          };
+          const fieldId = fieldMap[err.field] || err.field;
+          if (document.getElementById(fieldId)) {
+            setFieldError(fieldId, err.message);
+          }
+        });
+        showFormError(result.errors.map((e) => e.message).join(', '));
+      } else {
+        showFormError(result.message || 'Failed to submit booking. Please try again.');
+      }
       submitBtn.disabled = false;
       loadingEl.style.display = 'none';
     }
@@ -388,6 +535,9 @@ function bindEvents() {
     }
   });
 
+  window.addEventListener('hashchange', handleHashRoute);
+  window.addEventListener('popstate', handleHashRoute);
+
   const themeBtn = document.getElementById('themeBtn');
   if (themeBtn) themeBtn.addEventListener('click', toggleTheme);
 
@@ -396,6 +546,20 @@ function bindEvents() {
 
   const submitBtn = document.getElementById('submitBtn');
   if (submitBtn) submitBtn.addEventListener('click', submitBooking);
+
+  const bookAnotherBtn = document.getElementById('bookAnotherBtn');
+  if (bookAnotherBtn) bookAnotherBtn.addEventListener('click', resetBookingForm);
+
+  const serviceEl = document.getElementById('service');
+  if (serviceEl) serviceEl.addEventListener('change', toggleDropoffField);
+
+  document.querySelectorAll('.form-group input, .form-group select, .form-group textarea').forEach((el) => {
+    el.addEventListener('input', () => {
+      el.classList.remove('error');
+      const errorEl = document.getElementById(el.id + 'Error');
+      if (errorEl) errorEl.classList.remove('show');
+    });
+  });
 }
 
 document.addEventListener('DOMContentLoaded', () => {
@@ -403,5 +567,7 @@ document.addEventListener('DOMContentLoaded', () => {
   injectFooters();
   bindEvents();
   applyGalleryFilter('all');
+  toggleDropoffField();
+  handleHashRoute();
   initReveals();
 });

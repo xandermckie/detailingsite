@@ -113,10 +113,30 @@ Create a new booking request.
   "phone": "(555) 123-4567",
   "vehicle": "2020 Honda Civic",
   "address": "123 Main St, Anytown",
-  "service": "dropoff",
+  "service": "mobile",
   "date": "2025-06-14",
   "time": "10:00 AM",
-  "notes": "Car has some interior stains"
+  "notes": "Car has some interior stains",
+  "privacyConsent": true
+}
+```
+
+**Service values:** `mobile` ($175) or `pickup_dropoff` ($200). For `pickup_dropoff`, include `dropoffAddress`.
+
+**Example with pickup & drop-off:**
+```json
+{
+  "firstName": "Jane",
+  "lastName": "Smith",
+  "email": "jane@example.com",
+  "phone": "(555) 987-6543",
+  "vehicle": "2018 Ford F-150",
+  "address": "123 Main St, Anytown",
+  "dropoffAddress": "456 Oak Ave, Anytown",
+  "service": "pickup_dropoff",
+  "date": "2025-06-15",
+  "time": "8:00 AM",
+  "privacyConsent": true
 }
 ```
 
@@ -150,8 +170,51 @@ Get public booking summary.
 }
 ```
 
+### GET `/api/availability`
+Get booked time slots for a calendar month. Query params: `year`, `month` (1–12).
+
 ### GET `/api/bookings/:bookingId/details`
 Get full booking details (encrypted fields decrypted). **Admin only** — requires `X-API-Key` header.
+
+### Admin endpoints (all require `X-API-Key` header)
+
+| Method | Path | Purpose |
+|--------|------|---------|
+| `GET` | `/api/admin/bookings` | List bookings for a month (`year`, `month`, optional `status`) |
+| `GET` | `/api/admin/bookings/:id/details` | Decrypted booking details |
+| `PATCH` | `/api/admin/bookings/:id` | Update status (`confirmed`, `cancelled`, `completed`) |
+| `DELETE` | `/api/admin/bookings/:id` | GDPR deletion |
+| `GET` | `/api/admin/bookings/:id/export` | Export decrypted booking as JSON |
+
+### Admin dashboard
+
+Visit `/admin.html` on your site (or `http://localhost:3000/admin.html` locally). Sign in with your `ADMIN_API_KEY` to view, confirm, cancel, complete, export, or delete bookings.
+
+## Frontend structure
+
+Static files live in `public/`:
+- `index.html` — main SPA (home, services, gallery, about, booking, privacy)
+- `admin.html` — admin dashboard
+- `js/app.js` — site logic
+- `js/admin.js` — admin dashboard logic
+- `js/config.js` — Railway API origin for production
+
+## Email notifications
+
+Set these environment variables to enable booking emails:
+
+```
+SMTP_HOST=smtp.gmail.com
+SMTP_PORT=587
+SMTP_USER=your-email@gmail.com
+SMTP_PASS=your-app-specific-password
+OWNER_EMAIL=xandermckie@gmail.com
+```
+
+When configured, the server sends:
+- Owner alert on new booking
+- Customer confirmation receipt
+- Status change emails when admin confirms/cancels/completes
 
 ## Database
 
@@ -170,6 +233,8 @@ SQLite database at `./data/bookings.db` contains:
 - `time` - Booking time
 - `notes` - Optional notes
 - `status` - pending / confirmed / completed / cancelled
+- `consent_at` - GDPR consent timestamp
+- `dropoff_address_encrypted` - Encrypted drop-off address (pickup_dropoff service)
 - `created_at` - Timestamp
 - `updated_at` - Timestamp
 
@@ -219,13 +284,20 @@ The API will decrypt and return all customer information.
 - Ensure `SITE_URL` in `.env` matches your domain
 - Verify backend is running
 
+## Testing
+
+```bash
+npm test
+```
+
+Runs API integration tests against a temporary SQLite database.
+
 ## Next Steps
 
-1. **Add email notifications** - Integrate with Gmail/SendGrid to notify when bookings are received
-2. **Admin dashboard** - Build a dashboard to view and manage bookings
-3. **Payment processing** - If needed later, add Stripe integration
-4. **SMS confirmations** - Send SMS confirmations via Twilio
-5. **Image uploads** - Add before/after photo uploads to database
+1. **Add gallery photos** — Drop images into `public/photos/` using filenames from the PHOTO_MANIFEST comment in `index.html`
+2. **Configure SMTP** — Set `SMTP_*` and `OWNER_EMAIL` on Railway for email notifications
+3. **Payment processing** — If needed later, add Stripe integration
+4. **SMS confirmations** — Send SMS confirmations via Twilio
 
 ## Support
 
