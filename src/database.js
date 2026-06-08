@@ -70,6 +70,31 @@ class Database {
     });
   }
 
+  async deduplicateSlots() {
+    const dupes = await this.all(`
+      SELECT date, time FROM bookings
+      WHERE status != 'cancelled'
+      GROUP BY date, time HAVING COUNT(*) > 1
+    `);
+
+    for (const { date, time } of dupes) {
+      const rows = await this.all(
+        `SELECT id FROM bookings
+         WHERE date = ? AND time = ? AND status != 'cancelled'
+         ORDER BY created_at ASC`,
+        [date, time]
+      );
+      const keepId = rows[0].id;
+      for (let i = 1; i < rows.length; i++) {
+        await this.run(
+          `UPDATE bookings SET status = 'cancelled', updated_at = CURRENT_TIMESTAMP WHERE id = ?`,
+          [rows[i].id]
+        );
+        console.warn(`Migration: cancelled duplicate booking ${rows[i].id} for ${date} ${time} (kept ${keepId})`);
+      }
+    }
+  }
+
   async migrate() {
     const columns = await this.all('PRAGMA table_info(bookings)');
     const colNames = columns.map((c) => c.name);
@@ -81,10 +106,17 @@ class Database {
       await this.run('ALTER TABLE bookings ADD COLUMN dropoff_address_encrypted TEXT');
     }
 
-    await this.run(`
-      CREATE UNIQUE INDEX IF NOT EXISTS idx_booking_slot
-      ON bookings(date, time) WHERE status != 'cancelled'
-    `);
+    await this.deduplicateSlots();
+
+    const existingIndex = await this.get(
+      `SELECT name FROM sqlite_master WHERE type = 'index' AND name = 'idx_booking_slot'`
+    );
+    if (!existingIndex) {
+      await this.run(`
+        CREATE UNIQUE INDEX idx_booking_slot
+        ON bookings(date, time) WHERE status != 'cancelled'
+      `);
+    }
   }
 
   run(sql, params = []) {
