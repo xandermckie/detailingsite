@@ -529,7 +529,7 @@ const startServer = async () => {
     await db.init();
     console.log('✓ Database initialized');
 
-    app.listen(PORT, () => {
+    const server = app.listen(PORT, () => {
       console.log(`✓ Server running on port ${PORT}`);
       console.log(`✓ Environment: ${NODE_ENV}`);
       if (!emailService.isConfigured()) {
@@ -537,8 +537,19 @@ const startServer = async () => {
       }
     });
 
+    server.on('error', (err) => {
+      if (err.code === 'EADDRINUSE') {
+        console.error(`✗ Port ${PORT} is already in use.`);
+        console.error('  Stop the other server (or close the previous debug session), then try again.');
+        console.error(`  Or set PORT=3001 in your .env file.`);
+        process.exit(1);
+      }
+      console.error('✗ Server error:', err.message);
+      process.exit(1);
+    });
+
   } catch (error) {
-    console.error('✗ Startup error:', error);
+    console.error('✗ Startup error:', error.message);
     process.exit(1);
   }
 };
