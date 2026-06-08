@@ -14,6 +14,7 @@ const SERVICE_LABELS = {
 
 const FACEBOOK_URL = window.FACEBOOK_URL || '';
 const TIKTOK_URL = window.TIKTOK_URL || '';
+const CONTACT_EMAIL = window.CONTACT_EMAIL || 'secondsfoodtruck@gmail.com';
 
 function renderSocialBtn(platform, label, iconId, url) {
   const inner = `<svg><use href="#${iconId}"/></svg> ${label}`;
@@ -60,7 +61,7 @@ function makeFooter() {
         <span class="footer-logo">2 The <span>Xtreme</span> Detailing</span>
         <p>Mobile hand detailing done right. We come to you. No drop offs needed. Family run and proud of every car we touch.</p>
         <span class="inc-tag">A 2nd Chances INC. Brand</span>
-        <p style="font-size:0.8rem;color:var(--white-muted);margin-top:0.75rem;"><a href="mailto:xandermckie@gmail.com" style="color:var(--red);text-decoration:none;">xandermckie@gmail.com</a></p>
+        <p style="font-size:0.8rem;color:var(--white-muted);margin-top:0.75rem;"><a href="mailto:${CONTACT_EMAIL}" style="color:var(--red);text-decoration:none;">${CONTACT_EMAIL}</a></p>
         <div class="social-links" style="margin-top:1.25rem;">
           ${renderSocialBtn('fb', 'Facebook', 'icon-fb', FACEBOOK_URL)}
           ${renderSocialBtn('tt', 'TikTok', 'icon-tt', TIKTOK_URL)}
@@ -329,6 +330,12 @@ function showFormError(message) {
   if (!errorEl) return;
   errorEl.textContent = message;
   errorEl.classList.add('show');
+  errorEl.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+}
+
+function focusFirstFieldError() {
+  const firstError = document.querySelector('.form-group input.error, .form-group select.error, .form-group textarea.error');
+  if (firstError) firstError.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
 }
 
 function validateBookingForm() {
@@ -375,25 +382,24 @@ function validateBookingForm() {
     valid = false;
   }
 
-  if (!consent) {
-    showFormError('You must agree to the privacy policy.');
-    valid = false;
-  }
-
+  const formErrors = [];
+  if (!consent) formErrors.push('You must agree to the privacy policy.');
   if (!selectedDate) {
-    showFormError('Please select a date.');
-    valid = false;
+    formErrors.push('Please select a date (Thursday, Friday, or Saturday).');
   } else if (!isBookableDay(dateKey(selectedDate))) {
-    showFormError('Only Thursday, Friday, and Saturday are available.');
+    formErrors.push('Only Thursday, Friday, and Saturday are available.');
+  }
+  if (!selectedTime) formErrors.push('Please select a time slot.');
+
+  if (formErrors.length) {
+    showFormError(formErrors.join(' '));
     valid = false;
   }
 
-  if (!selectedTime) {
-    showFormError('Please select a time slot.');
-    valid = false;
+  if (!valid) {
+    focusFirstFieldError();
+    return null;
   }
-
-  if (!valid) return null;
 
   return { fname, lname, email, phone, vehicle, address, service, dropoffAddress, consent };
 }
@@ -464,7 +470,12 @@ async function submitBooking() {
       body: JSON.stringify(payload)
     });
 
-    const result = await response.json();
+    let result;
+    try {
+      result = await response.json();
+    } catch (parseError) {
+      throw new Error('Invalid server response');
+    }
 
     if (response.ok && result.success) {
       document.getElementById('bookingFormWrap').style.display = 'none';
@@ -508,7 +519,10 @@ async function submitBooking() {
     }
   } catch (error) {
     console.error('Form submission error:', error);
-    showFormError('Failed to submit booking. Please check your connection and try again.');
+    showFormError(
+      'Unable to reach the booking server. Please try again, or email ' +
+      CONTACT_EMAIL + ' to schedule your detail.'
+    );
     submitBtn.disabled = false;
     loadingEl.style.display = 'none';
   }

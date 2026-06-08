@@ -88,8 +88,19 @@ app.use(helmet({
   xssFilter: true
 }));
 
+const allowedOrigins = (process.env.ALLOWED_ORIGINS || process.env.SITE_URL || 'http://localhost:3000')
+  .split(',')
+  .map((origin) => origin.trim())
+  .filter(Boolean);
+
 const corsOptions = {
-  origin: process.env.SITE_URL || 'http://localhost:3000',
+  origin(origin, callback) {
+    if (!origin || allowedOrigins.includes(origin)) {
+      callback(null, true);
+    } else {
+      callback(null, false);
+    }
+  },
   credentials: true,
   optionsSuccessStatus: 200,
   methods: ['GET', 'POST', 'PATCH', 'DELETE', 'OPTIONS'],
